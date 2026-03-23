@@ -171,7 +171,10 @@
         const API_KEY = '$2a$10$EGX5KXw97dhRFhs5xPATb.zRWDYhemq3L/inhpx.oh6qRFxtU9EzW'; 
         // ==========================================
 
-        const url = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+        // 💡 修复重点：专门区分了“读取链接”和“写入链接”，并加上了 /latest 确保拉取最新
+        const fetchUrl = `https://api.jsonbin.io/v3/b/${BIN_ID}/latest`;
+        const updateUrl = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
         
         let cloudData = { taScore: 0, taHistory: [], myScore: 0, myHistory: [], messages: [] };
         let isSyncing = false;
@@ -198,19 +201,20 @@
             document.getElementById('score-my').innerText = cloudData.myScore;
             renderHistory('history-my', cloudData.myHistory, '#1e90ff');
 
-            // 渲染留言板与计数器
             const msgListEl = document.getElementById('msg-list');
             const msgCounter = document.getElementById('msg-counter');
             
             const msgCount = cloudData.messages ? cloudData.messages.length : 0;
-            msgCounter.innerText = `${msgCount}/50`;
-            
-            if (msgCount >= 45) {
-                msgCounter.style.color = "red";
-                msgCounter.style.fontWeight = "bold";
-            } else {
-                msgCounter.style.color = "#ba55d3";
-                msgCounter.style.fontWeight = "normal";
+            // 确保如果原来没有 msgCounter 元素时不报错
+            if(msgCounter) {
+                msgCounter.innerText = `${msgCount}/50`;
+                if (msgCount >= 45) {
+                    msgCounter.style.color = "red";
+                    msgCounter.style.fontWeight = "bold";
+                } else {
+                    msgCounter.style.color = "#ba55d3";
+                    msgCounter.style.fontWeight = "normal";
+                }
             }
 
             msgListEl.innerHTML = '';
@@ -250,17 +254,23 @@
 
         async function loadDataFromCloud() {
             if (BIN_ID.includes('这里填入')) return;
-            setStatus('☁️ 同步中...', '#ffaa33', true);
+            setStatus('☁️ 强制拉取最新...', '#ffaa33', true);
             try {
-                const response = await fetch(url, { headers: { 'X-Master-Key': API_KEY } });
+                // 💡 修复重点：加上时间戳 ?t=xxx 且强制 no-store，彻底打破浏览器缓存！
+                const response = await fetch(fetchUrl + '?t=' + new Date().getTime(), { 
+                    headers: { 'X-Master-Key': API_KEY, 'Cache-Control': 'no-cache' },
+                    cache: 'no-store' 
+                });
                 if (!response.ok) throw new Error('网络请求失败');
                 const data = await response.json();
                 const fetched = data.record;
+                
                 cloudData.taScore = fetched.taScore !== undefined ? fetched.taScore : (fetched.score || 0);
                 cloudData.taHistory = fetched.taHistory || fetched.history || [];
                 cloudData.myScore = fetched.myScore || 0;
                 cloudData.myHistory = fetched.myHistory || [];
-                cloudData.messages = fetched.messages || [];
+                cloudData.messages = fetched.messages || []; // 如果对方上传了旧数据导致留言丢失，这里会防崩溃
+                
                 render();
                 setStatus('✅ 数据已最新', '#32cd32', false);
             } catch (error) { setStatus('❌ 同步失败', 'red', false); }
@@ -269,9 +279,13 @@
         async function saveDataToCloud() {
             setStatus('⬆️ 上传中...', '#ffaa33', true);
             try {
-                const response = await fetch(url, {
+                const response = await fetch(updateUrl, {
                     method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'X-Master-Key': API_KEY,
+                        'X-Bin-Versioning': 'false' // 💡 修复重点：关闭版本控制，直接覆盖为最新
+                    },
                     body: JSON.stringify(cloudData)
                 });
                 if (!response.ok) throw new Error('保存失败');
@@ -302,19 +316,17 @@
             document.getElementById(`input-score-${target}`).value = '';
         }
 
-        // 处理发送留言与满载拦截
         async function addMessage() {
             if (isSyncing) return;
             const msgInput = document.getElementById('msg-input');
             const text = msgInput.value.trim();
             if (!text) { alert('你还没有写留言呢！'); return; }
 
-            // 满50条提醒逻辑
             if (cloudData.messages && cloudData.messages.length >= 50) {
-                const wantExport = confirm('⚠️ 留言板快装不下啦（已经50条了）！\n继续发送最早的留言将被覆盖。\n\n需要现在先把之前的留言导出保存下来吗？');
+                const wantExport = confirm('⚠️ 留言板快装不下啦！\n\n需要现在先把之前的留言导出保存下来吗？');
                 if (wantExport) {
                     exportMessages();
-                    return; // 拦截发送，等导出完再说
+                    return; 
                 }
             }
 
@@ -326,33 +338,22 @@
             await saveDataToCloud();
         }
 
-        // 新增功能：导出留言并生成TXT下载
         function exportMessages() {
             if (!cloudData.messages || cloudData.messages.length === 0) {
                 alert("目前还没有留言可以导出哦~");
                 return;
             }
+            let textContent = "💖 我们的专属留言板记录 💖\n=================================\n\n";
+            cloudData.messages.forEach(msg => { textContent += `[${msg.time}] ${msg.text}\n`; });
+            textContent += "\n=================================\n导出于：" + getTimeString();
 
-            let textContent = "专属留言板记录\n";
-            textContent += "=================================\n\n";
-            
-            cloudData.messages.forEach(msg => {
-                textContent += `[${msg.time}] ${msg.text}\n`;
-            });
-            
-            textContent += "\n=================================\n";
-            textContent += "导出于：" + getTimeString();
-
-            // 生成文件并触发下载
             const blob = new Blob([textContent], { type: "text/plain;charset=utf-8" });
             const link = document.createElement("a");
             link.href = URL.createObjectURL(blob);
             link.download = "我们的专属心动留言记录.txt";
-            
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
             alert("✅ 留言记录已开始下载啦！记得保存好哦~");
         }
 
