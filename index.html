@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>专属心动计分板 💖</title>
+    <style>
+        body {
+            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
+            background-color: #fff0f5;
+            color: #5a3e3e;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 30px 20px;
+            margin: 0;
+        }
+        .scoreboard {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 20px rgba(255, 182, 193, 0.4);
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        h1 {
+            color: #ff69b4;
+            font-size: 24px;
+            margin-top: 0;
+            margin-bottom: 5px;
+        }
+        p.subtitle {
+            color: #ffb6c1;
+            font-size: 14px;
+            margin-top: 0;
+        }
+        .score {
+            font-size: 80px;
+            font-weight: bold;
+            color: #ff1493;
+            margin: 15px 0;
+            text-shadow: 2px 2px 4px rgba(255, 20, 147, 0.1);
+            transition: transform 0.2s;
+        }
+        /* 自定义输入区样式 */
+        .custom-input-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 20px;
+            background: #fff0f5;
+            padding: 15px;
+            border-radius: 12px;
+        }
+        input {
+            padding: 10px;
+            border: 2px solid #ffe4e1;
+            border-radius: 8px;
+            outline: none;
+            font-size: 14px;
+            color: #5a3e3e;
+            transition: border-color 0.2s;
+        }
+        input:focus {
+            border-color: #ff69b4;
+        }
+        input[type="text"] { 
+            flex: 2; 
+            min-width: 120px; 
+        }
+        input[type="number"] { 
+            flex: 1; 
+            min-width: 60px; 
+        }
+        .btn-custom {
+            background-color: #ff69b4;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 15px;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            font-weight: bold;
+            flex: 1;
+            min-width: 80px;
+            transition: all 0.2s;
+        }
+        .btn-custom:hover { background-color: #ff1493; transform: translateY(-2px); }
+        .btn-custom:active { transform: translateY(0); }
+
+        .divider {
+            height: 1px;
+            background-color: #ffe4e1;
+            margin: 15px 0;
+        }
+
+        .btn-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+        }
+        button.quick-btn {
+            background-color: #ffb6c1;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 12px;
+            color: white;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        button.quick-btn:hover { background-color: #ff69b4; }
+        .btn-negative { background-color: #e0e0e0 !important; color: #666 !important; }
+        .btn-negative:hover { background-color: #ccc !important; }
+
+        .history-container {
+            text-align: left;
+            margin-top: 25px;
+            border-top: 2px dashed #ffe4e1;
+            padding-top: 15px;
+        }
+        .history-title {
+            font-size: 14px;
+            color: #ff69b4;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .history {
+            max-height: 180px;
+            overflow-y: auto;
+        }
+        .history-item {
+            font-size: 13px;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #fafafa;
+            padding: 8px;
+            border-radius: 8px;
+        }
+        .time { color: #aaa; font-size: 11px; }
+        .reset-btn {
+            background-color: transparent;
+            border: 1px solid #ffb6c1;
+            color: #ff69b4;
+            margin-top: 15px;
+            padding: 8px 12px;
+            font-size: 12px;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        .reset-btn:hover { background-color: #fff0f5; }
+    </style>
+</head>
+<body>
+
+    <div class="scoreboard">
+        <h1>💖 专属心动计分板 💖</h1>
+        <p class="subtitle">目前对Ta的综合好感度</p>
+        
+        <div class="score" id="scoreDisplay">0</div>
+
+        <div class="custom-input-group">
+            <input type="text" id="customReason" placeholder="例如：带了热奶茶 🧋" maxlength="20">
+            <input type="number" id="customScore" placeholder="分数 (如 5 或 -2)">
+            <button class="btn-custom" onclick="addCustomScore()">记录 ✏️</button>
+        </div>
+
+        <div class="divider"></div>
+        <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">—— 或者使用快捷打分 ——</p>
+
+        <div class="btn-group">
+            <button class="quick-btn" onclick="updateScore(5, '夸我好看 🥰')">夸我好看 (+5)</button>
+            <button class="quick-btn" onclick="updateScore(2, '秒回消息 💬')">秒回消息 (+2)</button>
+            <button class="quick-btn btn-negative" onclick="updateScore(-3, '惹我生气 😠')">惹我生气 (-3)</button>
+        </div>
+
+        <div class="history-container">
+            <div class="history-title">📝 记账本 (得分明细)</div>
+            <div class="history" id="historyList">
+                </div>
+        </div>
+
+        <button class="reset-btn" onclick="resetScore()">清空分数 (开启新阶段)</button>
+    </div>
+
+    <script>
+        let score = localStorage.getItem('crushScore') ? parseInt(localStorage.getItem('crushScore')) : 0;
+        let history = localStorage.getItem('crushHistory') ? JSON.parse(localStorage.getItem('crushHistory')) : [];
+
+        const scoreDisplay = document.getElementById('scoreDisplay');
+        const historyList = document.getElementById('historyList');
+
+        function render() {
+            scoreDisplay.innerText = score;
+            scoreDisplay.style.transform = 'scale(1.1)';
+            setTimeout(() => scoreDisplay.style.transform = 'scale(1)', 150);
+
+            historyList.innerHTML = '';
+            if (history.length === 0) {
+                historyList.innerHTML = '<div style="color:#ccc; text-align:center; font-size:12px; padding:10px;">暂时还没有记录哦，快去给Ta打分吧！</div>';
+                return;
+            }
+
+            history.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'history-item';
+                const sign = item.change > 0 ? '+' : '';
+                const color = item.change > 0 ? '#ff1493' : '#666';
+                div.innerHTML = `
+                    <span>${item.reason} <span style="color:${color}; font-weight:bold; margin-left:5px;">${sign}${item.change}</span></span>
+                    <span class="time">${item.time}</span>
+                `;
+                historyList.appendChild(div);
+            });
+        }
+
+        function updateScore(change, reason) {
+            score += change;
+            const now = new Date();
+            const timeString = `${now.getMonth() + 1}-${now.getDate().toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+            
+            history.unshift({ change, reason, time: timeString });
+            if (history.length > 30) history.pop();
+
+            localStorage.setItem('crushScore', score);
+            localStorage.setItem('crushHistory', JSON.stringify(history));
+            
+            render();
+        }
+
+        // 新增：处理自定义输入的函数
+        function addCustomScore() {
+            const reasonInput = document.getElementById('customReason');
+            const scoreInput = document.getElementById('customScore');
+            
+            const reason = reasonInput.value.trim();
+            const change = parseInt(scoreInput.value);
+
+            if (!reason) {
+                alert('要写一下加分/扣分的原因哦！🥰');
+                return;
+            }
+            if (isNaN(change)) {
+                alert('分数记得填数字呀，比如 5 或者 -3 🔢');
+                return;
+            }
+
+            updateScore(change, reason);
+
+            // 记录成功后清空输入框
+            reasonInput.value = '';
+            scoreInput.value = '';
+        }
+
+        function resetScore() {
+            if (confirm('确定要清空所有分数和记录吗？（也许可以截图发给Ta作为阶段总结哦！）')) {
+                score = 0;
+                history = [];
+                localStorage.removeItem('crushScore');
+                localStorage.removeItem('crushHistory');
+                render();
+            }
+        }
+
+        render();
+    </script>
+</body>
+</html>
