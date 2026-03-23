@@ -3,263 +3,359 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>专属心动计分板 💖</title>
+    <title>专属心动空间 💖</title>
     <style>
         body {
             font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background-color: #fff0f5;
+            background-color: #fcf4f4;
             color: #5a3e3e;
             display: flex;
             flex-direction: column;
             align-items: center;
-            padding: 30px 20px;
+            padding: 20px 10px;
             margin: 0;
         }
-        .scoreboard {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 20px rgba(255, 182, 193, 0.4);
-            text-align: center;
-            max-width: 400px;
-            width: 100%;
-            box-sizing: border-box;
-            position: relative;
-        }
-        /* 云端同步状态提示 */
         #syncStatus {
-            position: absolute;
-            top: 15px;
-            right: 20px;
-            font-size: 12px;
-            color: #ffaa33;
-            font-weight: bold;
+            font-size: 12px; color: #ffaa33; font-weight: bold; margin-bottom: 10px;
+            background: white; padding: 5px 15px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
         }
-        h1 { color: #ff69b4; font-size: 24px; margin-top: 0; margin-bottom: 5px; }
-        p.subtitle { color: #ffb6c1; font-size: 14px; margin-top: 0; }
-        .score {
-            font-size: 80px; font-weight: bold; color: #ff1493; margin: 15px 0;
-            text-shadow: 2px 2px 4px rgba(255, 20, 147, 0.1); transition: transform 0.2s;
+        .container {
+            width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 20px;
         }
+        .panel {
+            background: white; border-radius: 20px; padding: 25px 20px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.05); text-align: center; position: relative;
+        }
+        
+        .panel-ta { border-top: 5px solid #ffb6c1; }
+        .panel-ta h2 { color: #ff69b4; }
+        .panel-ta .score { color: #ff1493; }
+        .panel-ta .btn-custom { background-color: #ff69b4; color: white; }
+        .panel-ta .quick-btn { background-color: #ffb6c1; color: white; }
+        
+        .panel-my { border-top: 5px solid #87cefa; }
+        .panel-my h2 { color: #4682b4; }
+        .panel-my .score { color: #1e90ff; }
+        .panel-my .btn-custom { background-color: #4682b4; color: white; }
+        .panel-my .quick-btn { background-color: #87cefa; color: white; }
+
+        .panel-msg { border-top: 5px solid #dda0dd; background: #fffaf0; }
+        .panel-msg h2 { color: #ba55d3; display: flex; justify-content: center; align-items: center; gap: 10px; }
+        .msg-count { font-size: 12px; background: #f3e5f5; color: #ba55d3; padding: 2px 8px; border-radius: 10px; font-weight: normal; }
+
+        h2 { font-size: 20px; margin: 0 0 5px 0; }
+        p.subtitle { font-size: 12px; color: #999; margin-top: 0; margin-bottom: 15px; }
+        .score { font-size: 60px; font-weight: bold; margin: 10px 0; transition: transform 0.2s; }
+        
         .custom-input-group {
-            display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
-            align-items: center; margin-bottom: 20px; background: #fff0f5;
-            padding: 15px; border-radius: 12px;
+            display: flex; gap: 5px; margin-bottom: 15px; background: #f9f9f9; padding: 10px; border-radius: 12px;
         }
         input {
-            padding: 10px; border: 2px solid #ffe4e1; border-radius: 8px;
-            outline: none; font-size: 14px; color: #5a3e3e; transition: border-color 0.2s;
+            padding: 8px; border: 1px solid #eee; border-radius: 8px; outline: none; font-size: 13px; width: 100%;
+            box-sizing: border-box;
         }
-        input:focus { border-color: #ff69b4; }
-        input[type="text"] { flex: 2; min-width: 120px; }
-        input[type="number"] { flex: 1; min-width: 60px; }
-        .btn-custom {
-            background-color: #ff69b4; border: none; border-radius: 8px; padding: 10px 15px;
-            color: white; font-size: 14px; cursor: pointer; font-weight: bold; flex: 1; min-width: 80px;
+        input:focus { border-color: #ccc; }
+        .input-reason { flex: 2; }
+        .input-score { flex: 1; min-width: 60px; }
+        button {
+            border: none; border-radius: 8px; padding: 8px 12px; font-size: 13px; cursor: pointer;
+            transition: all 0.2s; font-weight: bold; white-space: nowrap;
         }
-        .btn-custom:hover:not(:disabled) { background-color: #ff1493; transform: translateY(-2px); }
-        .divider { height: 1px; background-color: #ffe4e1; margin: 15px 0; }
-        .btn-group { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
-        button.quick-btn {
-            background-color: #ffb6c1; border: none; border-radius: 8px; padding: 8px 12px;
-            color: white; font-size: 13px; cursor: pointer; transition: all 0.2s;
-        }
-        button.quick-btn:hover:not(:disabled) { background-color: #ff69b4; }
-        .btn-negative { background-color: #e0e0e0 !important; color: #666 !important; }
-        .btn-negative:hover:not(:disabled) { background-color: #ccc !important; }
-        button:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
+        button:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(0.9); }
+        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
 
-        .history-container {
-            text-align: left; margin-top: 25px; border-top: 2px dashed #ffe4e1; padding-top: 15px;
-        }
-        .history-title { font-size: 14px; color: #ff69b4; font-weight: bold; margin-bottom: 10px; }
-        .history { max-height: 180px; overflow-y: auto; }
+        .btn-group { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 15px; }
+        .btn-negative { background-color: #e0e0e0 !important; color: #666 !important; }
+
+        .history-title { font-size: 13px; font-weight: bold; margin-bottom: 10px; text-align: left; color: #666;}
+        .history { max-height: 120px; overflow-y: auto; text-align: left; }
         .history-item {
-            font-size: 13px; margin-bottom: 8px; display: flex; justify-content: space-between;
-            align-items: center; background: #fafafa; padding: 8px; border-radius: 8px;
+            font-size: 12px; margin-bottom: 6px; display: flex; justify-content: space-between;
+            background: #fafafa; padding: 6px 10px; border-radius: 6px; border-left: 3px solid #ccc;
         }
-        .time { color: #aaa; font-size: 11px; }
-        .reset-btn {
-            background-color: transparent; border: 1px solid #ffb6c1; color: #ff69b4;
-            margin-top: 15px; padding: 8px 12px; font-size: 12px; border-radius: 8px; cursor: pointer;
+        .time { color: #aaa; font-size: 10px; }
+
+        .msg-list {
+            max-height: 200px; overflow-y: auto; text-align: left; margin-bottom: 15px;
+            display: flex; flex-direction: column; gap: 10px; padding: 5px;
         }
-        .reset-btn:hover:not(:disabled) { background-color: #fff0f5; }
+        .msg-item {
+            background: white; padding: 10px 15px; border-radius: 15px; font-size: 13px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05); align-self: flex-start; max-width: 85%;
+            word-break: break-all;
+        }
+        .msg-time { font-size: 10px; color: #aaa; margin-top: 5px; text-align: right; }
+        .msg-input-box { display: flex; gap: 8px; margin-bottom: 10px; }
+        .msg-input-box input { flex: 1; border: 2px solid #dda0dd; }
+        .msg-input-box button { background: #ba55d3; color: white; }
+        
+        .export-btn { 
+            background: transparent; color: #ba55d3; border: 1px solid #dda0dd; 
+            width: 100%; font-size: 12px; padding: 6px; margin-top: 5px;
+        }
+        .export-btn:hover { background: #f3e5f5; }
+
     </style>
 </head>
 <body>
 
-    <div class="scoreboard">
-        <div id="syncStatus">☁️ 连接中...</div>
-        <h1>💖 专属心动计分板 💖</h1>
-        <p class="subtitle">目前对Ta的综合好感度</p>
+    <div id="syncStatus">☁️ 连接云端中...</div>
+
+    <div class="container">
         
-        <div class="score" id="scoreDisplay">...</div>
+        <div class="panel panel-ta">
+            <h2>🌸 YYF的得分 🌸</h2>
+            <p class="subtitle">ZXR给YYF打的分，目前好感度</p>
+            <div class="score" id="score-ta">...</div>
 
-        <div class="custom-input-group">
-            <input type="text" id="customReason" placeholder="例如：带了热奶茶 🧋" maxlength="20">
-            <input type="number" id="customScore" placeholder="分数 (如 5 或 -2)">
-            <button class="btn-custom" onclick="addCustomScore()" id="btnSubmit">记录 ✏️</button>
-        </div>
-
-        <div class="divider"></div>
-        <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">—— 快捷打分 ——</p>
-
-        <div class="btn-group">
-            <button class="quick-btn" onclick="updateScore(5, '夸我好看 🥰')">夸我好看 (+5)</button>
-            <button class="quick-btn" onclick="updateScore(2, '秒回消息 💬')">秒回消息 (+2)</button>
-            <button class="quick-btn btn-negative" onclick="updateScore(-3, '惹我生气 😠')">惹我生气 (-3)</button>
-        </div>
-
-        <div class="history-container">
-            <div class="history-title">📝 记账本 (云端同步版)</div>
-            <div class="history" id="historyList">
-                <div style="color:#ccc; text-align:center; font-size:12px; padding:10px;">正在努力从云端拉取数据...</div>
+            <div class="custom-input-group">
+                <input type="text" id="reason-ta" class="input-reason" placeholder="原因 (例: 带了奶茶)" maxlength="20">
+                <input type="number" id="input-score-ta" class="input-score" placeholder="分数">
+                <button class="btn-custom" onclick="addCustomScore('ta')">记录</button>
             </div>
+
+            <div class="btn-group">
+                <button class="quick-btn" onclick="updateScore('ta', 5, '表现超棒 🥰')">超棒 (+5)</button>
+                <button class="quick-btn" onclick="updateScore('ta', 2, '秒回消息 💬')">秒回 (+2)</button>
+                <button class="quick-btn btn-negative" onclick="updateScore('ta', -3, '惹我生气 😠')">惹生气 (-3)</button>
+            </div>
+
+            <div class="history-title">📝 记账本</div>
+            <div class="history" id="history-ta"></div>
         </div>
 
-        <button class="reset-btn" onclick="resetScore()">清空分数 (慎点！会清空云端)</button>
+        <div class="panel panel-my">
+            <h2>🐳 ZXR的得分 🐳</h2>
+            <p class="subtitle">YYF给ZXR打的分，求生欲测试</p>
+            <div class="score" id="score-my">...</div>
+
+            <div class="custom-input-group">
+                <input type="text" id="reason-my" class="input-reason" placeholder="原因 (例: 今天很可爱)" maxlength="20">
+                <input type="number" id="input-score-my" class="input-score" placeholder="分数">
+                <button class="btn-custom" onclick="addCustomScore('my')">记录</button>
+            </div>
+
+            <div class="btn-group">
+                <button class="quick-btn" onclick="updateScore('my', 5, '眼光真好 🥰')">超可爱 (+5)</button>
+                <button class="quick-btn" onclick="updateScore('my', 2, '主动报备 📱')">贴心 (+2)</button>
+                <button class="quick-btn btn-negative" onclick="updateScore('my', -3, '无理取闹 🐷')">小脾气 (-3)</button>
+            </div>
+
+            <div class="history-title">📝 记账本</div>
+            <div class="history" id="history-my"></div>
+        </div>
+
+        <div class="panel panel-msg">
+            <h2>💌 悄悄话留言板 <span class="msg-count" id="msg-counter">0/50</span></h2>
+            <p class="subtitle">有什么想对彼此说的，写在这里吧</p>
+            
+            <div class="msg-list" id="msg-list">
+                <div style="color:#aaa; text-align:center; font-size:12px; margin-top:20px;">还没有留言哦，来说第一句话吧！</div>
+            </div>
+
+            <div class="msg-input-box">
+                <input type="text" id="msg-input" placeholder="输入你想说的话..." maxlength="50">
+                <button onclick="addMessage()">发送留言 🚀</button>
+            </div>
+            
+            <button class="export-btn" onclick="exportMessages()">📥 导出并保存过往留言</button>
+        </div>
+
     </div>
 
     <script>
         // ==========================================
-        // ⚠️ 必填区：请在这里填入你刚刚在 JSONBin 申请的两个参数
+        // ⚠️ 必填区：替换下面的 ID 和 KEY
         // ==========================================
         const BIN_ID = '69C0F2B0B7ec241DDC94074f'; 
         const API_KEY = '$2a$10$EGX5KXw97dhRFhs5xPATb.zRWDYhemq3L/inhpx.oh6qRFxtU9EzW'; 
         // ==========================================
 
         const url = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
-        let score = 0;
-        let history = [];
-        let isSyncing = false; // 防止重复点击
+        
+        let cloudData = { taScore: 0, taHistory: [], myScore: 0, myHistory: [], messages: [] };
+        let isSyncing = false;
 
-        const scoreDisplay = document.getElementById('scoreDisplay');
-        const historyList = document.getElementById('historyList');
         const syncStatus = document.getElementById('syncStatus');
         const allButtons = document.querySelectorAll('button');
 
-        // 设置按钮和状态
-        function setStatus(statusText, color, disabled) {
-            syncStatus.innerText = statusText;
+        function setStatus(text, color, disabled) {
+            syncStatus.innerText = text;
             syncStatus.style.color = color;
             isSyncing = disabled;
             allButtons.forEach(btn => btn.disabled = disabled);
         }
 
-        // 渲染页面内容
-        function render() {
-            scoreDisplay.innerText = score;
-            scoreDisplay.style.transform = 'scale(1.1)';
-            setTimeout(() => scoreDisplay.style.transform = 'scale(1)', 150);
+        function getTimeString() {
+            const now = new Date();
+            return `${now.getMonth() + 1}-${now.getDate().toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+        }
 
-            historyList.innerHTML = '';
-            if (history.length === 0) {
-                historyList.innerHTML = '<div style="color:#ccc; text-align:center; font-size:12px; padding:10px;">目前是 0 分哦，快开始打分吧！</div>';
-                return;
+        function render() {
+            document.getElementById('score-ta').innerText = cloudData.taScore;
+            renderHistory('history-ta', cloudData.taHistory, '#ff1493');
+
+            document.getElementById('score-my').innerText = cloudData.myScore;
+            renderHistory('history-my', cloudData.myHistory, '#1e90ff');
+
+            // 渲染留言板与计数器
+            const msgListEl = document.getElementById('msg-list');
+            const msgCounter = document.getElementById('msg-counter');
+            
+            const msgCount = cloudData.messages ? cloudData.messages.length : 0;
+            msgCounter.innerText = `${msgCount}/50`;
+            
+            if (msgCount >= 45) {
+                msgCounter.style.color = "red";
+                msgCounter.style.fontWeight = "bold";
+            } else {
+                msgCounter.style.color = "#ba55d3";
+                msgCounter.style.fontWeight = "normal";
             }
 
-            history.forEach(item => {
+            msgListEl.innerHTML = '';
+            if (msgCount === 0) {
+                msgListEl.innerHTML = '<div style="color:#aaa; text-align:center; font-size:12px; margin-top:20px;">还没有留言哦，来说第一句话吧！</div>';
+            } else {
+                cloudData.messages.forEach(msg => {
+                    const div = document.createElement('div');
+                    div.className = 'msg-item';
+                    div.innerHTML = `<div>${msg.text}</div><div class="msg-time">${msg.time}</div>`;
+                    msgListEl.appendChild(div);
+                });
+                msgListEl.scrollTop = msgListEl.scrollHeight;
+            }
+        }
+
+        function renderHistory(elementId, historyArray, color) {
+            const el = document.getElementById(elementId);
+            el.innerHTML = '';
+            if (!historyArray || historyArray.length === 0) {
+                el.innerHTML = '<div style="color:#ccc; font-size:11px;">暂无记录~</div>';
+                return;
+            }
+            historyArray.forEach(item => {
                 const div = document.createElement('div');
                 div.className = 'history-item';
+                div.style.borderLeftColor = item.change > 0 ? color : '#ccc';
                 const sign = item.change > 0 ? '+' : '';
-                const color = item.change > 0 ? '#ff1493' : '#666';
+                const fontColor = item.change > 0 ? color : '#666';
                 div.innerHTML = `
-                    <span>${item.reason} <span style="color:${color}; font-weight:bold; margin-left:5px;">${sign}${item.change}</span></span>
+                    <span>${item.reason} <span style="color:${fontColor}; font-weight:bold;">${sign}${item.change}</span></span>
                     <span class="time">${item.time}</span>
                 `;
-                historyList.appendChild(div);
+                el.appendChild(div);
             });
         }
 
-        // 1. 从云端读取数据
         async function loadDataFromCloud() {
-            if (BIN_ID.includes('请在这里填入')) {
-                setStatus('⚠️ 尚未配置云端参数', 'red', true);
-                scoreDisplay.innerText = "Error";
-                return;
-            }
-
-            setStatus('☁️ 云端同步中...', '#ffaa33', true);
+            if (BIN_ID.includes('这里填入')) return;
+            setStatus('☁️ 同步中...', '#ffaa33', true);
             try {
-                const response = await fetch(url, {
-                    headers: { 'X-Master-Key': API_KEY }
-                });
+                const response = await fetch(url, { headers: { 'X-Master-Key': API_KEY } });
                 if (!response.ok) throw new Error('网络请求失败');
-                
                 const data = await response.json();
-                score = data.record.score || 0;
-                history = data.record.history || [];
-                
+                const fetched = data.record;
+                cloudData.taScore = fetched.taScore !== undefined ? fetched.taScore : (fetched.score || 0);
+                cloudData.taHistory = fetched.taHistory || fetched.history || [];
+                cloudData.myScore = fetched.myScore || 0;
+                cloudData.myHistory = fetched.myHistory || [];
+                cloudData.messages = fetched.messages || [];
                 render();
-                setStatus('✅ 云端已同步', '#32cd32', false);
-            } catch (error) {
-                console.error(error);
-                setStatus('❌ 同步失败，请重试', 'red', false);
-            }
+                setStatus('✅ 数据已最新', '#32cd32', false);
+            } catch (error) { setStatus('❌ 同步失败', 'red', false); }
         }
 
-        // 2. 将数据保存到云端
         async function saveDataToCloud() {
-            setStatus('⬆️ 正在上传云端...', '#ffaa33', true);
+            setStatus('⬆️ 上传中...', '#ffaa33', true);
             try {
                 const response = await fetch(url, {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': API_KEY
-                    },
-                    body: JSON.stringify({ score: score, history: history })
+                    headers: { 'Content-Type': 'application/json', 'X-Master-Key': API_KEY },
+                    body: JSON.stringify(cloudData)
                 });
                 if (!response.ok) throw new Error('保存失败');
-                
-                setStatus('✅ 已保存至云端', '#32cd32', false);
-            } catch (error) {
-                console.error(error);
-                setStatus('❌ 保存失败', 'red', false);
-                alert("保存到云端失败了，检查一下网络哦！");
-            }
+                setStatus('✅ 数据已保存', '#32cd32', false);
+            } catch (error) { setStatus('❌ 保存失败', 'red', false); }
         }
 
-        // 更新分数逻辑
-        async function updateScore(change, reason) {
+        async function updateScore(target, change, reason) {
             if (isSyncing) return;
-            
-            score += change;
-            const now = new Date();
-            const timeString = `${now.getMonth() + 1}-${now.getDate().toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-            
-            history.unshift({ change, reason, time: timeString });
-            if (history.length > 30) history.pop();
-
-            render();
-            await saveDataToCloud(); // 立即同步到云端
-        }
-
-        function addCustomScore() {
-            const reasonInput = document.getElementById('customReason');
-            const scoreInput = document.getElementById('customScore');
-            
-            const reason = reasonInput.value.trim();
-            const change = parseInt(scoreInput.value);
-
-            if (!reason) { alert('要写一下原因哦！🥰'); return; }
-            if (isNaN(change)) { alert('分数记得填数字呀 🔢'); return; }
-
-            updateScore(change, reason);
-            reasonInput.value = '';
-            scoreInput.value = '';
-        }
-
-        async function resetScore() {
-            if (confirm('确定要清空云端的所有记录吗？Ta也会看到记录归零哦！')) {
-                score = 0;
-                history = [];
-                render();
-                await saveDataToCloud();
+            const newRecord = { change, reason, time: getTimeString() };
+            if (target === 'ta') {
+                cloudData.taScore += change; cloudData.taHistory.unshift(newRecord);
+                if (cloudData.taHistory.length > 30) cloudData.taHistory.pop();
+            } else if (target === 'my') {
+                cloudData.myScore += change; cloudData.myHistory.unshift(newRecord);
+                if (cloudData.myHistory.length > 30) cloudData.myHistory.pop();
             }
+            render(); await saveDataToCloud();
         }
 
-        // 页面打开时，自动去云端拉取数据
+        function addCustomScore(target) {
+            const reason = document.getElementById(`reason-${target}`).value.trim();
+            const change = parseInt(document.getElementById(`input-score-${target}`).value);
+            if (!reason) { alert('要写原因哦！'); return; }
+            if (isNaN(change)) { alert('记得填数字🔢'); return; }
+            updateScore(target, change, reason);
+            document.getElementById(`reason-${target}`).value = '';
+            document.getElementById(`input-score-${target}`).value = '';
+        }
+
+        // 处理发送留言与满载拦截
+        async function addMessage() {
+            if (isSyncing) return;
+            const msgInput = document.getElementById('msg-input');
+            const text = msgInput.value.trim();
+            if (!text) { alert('你还没有写留言呢！'); return; }
+
+            // 满50条提醒逻辑
+            if (cloudData.messages && cloudData.messages.length >= 50) {
+                const wantExport = confirm('⚠️ 留言板快装不下啦（已经50条了）！\n继续发送最早的留言将被覆盖。\n\n需要现在先把之前的留言导出保存下来吗？');
+                if (wantExport) {
+                    exportMessages();
+                    return; // 拦截发送，等导出完再说
+                }
+            }
+
+            cloudData.messages.push({ text: text, time: getTimeString() });
+            if (cloudData.messages.length > 50) cloudData.messages.shift();
+
+            msgInput.value = '';
+            render();
+            await saveDataToCloud();
+        }
+
+        // 新增功能：导出留言并生成TXT下载
+        function exportMessages() {
+            if (!cloudData.messages || cloudData.messages.length === 0) {
+                alert("目前还没有留言可以导出哦~");
+                return;
+            }
+
+            let textContent = "专属留言板记录\n";
+            textContent += "=================================\n\n";
+            
+            cloudData.messages.forEach(msg => {
+                textContent += `[${msg.time}] ${msg.text}\n`;
+            });
+            
+            textContent += "\n=================================\n";
+            textContent += "导出于：" + getTimeString();
+
+            // 生成文件并触发下载
+            const blob = new Blob([textContent], { type: "text/plain;charset=utf-8" });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "我们的专属心动留言记录.txt";
+            
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            
+            alert("✅ 留言记录已开始下载啦！记得保存好哦~");
+        }
+
         loadDataFromCloud();
     </script>
 </body>
