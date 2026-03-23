@@ -24,156 +24,85 @@
             max-width: 400px;
             width: 100%;
             box-sizing: border-box;
+            position: relative;
         }
-        h1 {
-            color: #ff69b4;
-            font-size: 24px;
-            margin-top: 0;
-            margin-bottom: 5px;
-        }
-        p.subtitle {
-            color: #ffb6c1;
-            font-size: 14px;
-            margin-top: 0;
-        }
-        .score {
-            font-size: 80px;
+        /* 云端同步状态提示 */
+        #syncStatus {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 12px;
+            color: #ffaa33;
             font-weight: bold;
-            color: #ff1493;
-            margin: 15px 0;
-            text-shadow: 2px 2px 4px rgba(255, 20, 147, 0.1);
-            transition: transform 0.2s;
         }
-        /* 自定义输入区样式 */
+        h1 { color: #ff69b4; font-size: 24px; margin-top: 0; margin-bottom: 5px; }
+        p.subtitle { color: #ffb6c1; font-size: 14px; margin-top: 0; }
+        .score {
+            font-size: 80px; font-weight: bold; color: #ff1493; margin: 15px 0;
+            text-shadow: 2px 2px 4px rgba(255, 20, 147, 0.1); transition: transform 0.2s;
+        }
         .custom-input-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            justify-content: center;
-            align-items: center;
-            margin-bottom: 20px;
-            background: #fff0f5;
-            padding: 15px;
-            border-radius: 12px;
+            display: flex; flex-wrap: wrap; gap: 8px; justify-content: center;
+            align-items: center; margin-bottom: 20px; background: #fff0f5;
+            padding: 15px; border-radius: 12px;
         }
         input {
-            padding: 10px;
-            border: 2px solid #ffe4e1;
-            border-radius: 8px;
-            outline: none;
-            font-size: 14px;
-            color: #5a3e3e;
-            transition: border-color 0.2s;
+            padding: 10px; border: 2px solid #ffe4e1; border-radius: 8px;
+            outline: none; font-size: 14px; color: #5a3e3e; transition: border-color 0.2s;
         }
-        input:focus {
-            border-color: #ff69b4;
-        }
-        input[type="text"] { 
-            flex: 2; 
-            min-width: 120px; 
-        }
-        input[type="number"] { 
-            flex: 1; 
-            min-width: 60px; 
-        }
+        input:focus { border-color: #ff69b4; }
+        input[type="text"] { flex: 2; min-width: 120px; }
+        input[type="number"] { flex: 1; min-width: 60px; }
         .btn-custom {
-            background-color: #ff69b4;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 15px;
-            color: white;
-            font-size: 14px;
-            cursor: pointer;
-            font-weight: bold;
-            flex: 1;
-            min-width: 80px;
-            transition: all 0.2s;
+            background-color: #ff69b4; border: none; border-radius: 8px; padding: 10px 15px;
+            color: white; font-size: 14px; cursor: pointer; font-weight: bold; flex: 1; min-width: 80px;
         }
-        .btn-custom:hover { background-color: #ff1493; transform: translateY(-2px); }
-        .btn-custom:active { transform: translateY(0); }
-
-        .divider {
-            height: 1px;
-            background-color: #ffe4e1;
-            margin: 15px 0;
-        }
-
-        .btn-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            justify-content: center;
-        }
+        .btn-custom:hover:not(:disabled) { background-color: #ff1493; transform: translateY(-2px); }
+        .divider { height: 1px; background-color: #ffe4e1; margin: 15px 0; }
+        .btn-group { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
         button.quick-btn {
-            background-color: #ffb6c1;
-            border: none;
-            border-radius: 8px;
-            padding: 8px 12px;
-            color: white;
-            font-size: 13px;
-            cursor: pointer;
-            transition: all 0.2s;
+            background-color: #ffb6c1; border: none; border-radius: 8px; padding: 8px 12px;
+            color: white; font-size: 13px; cursor: pointer; transition: all 0.2s;
         }
-        button.quick-btn:hover { background-color: #ff69b4; }
+        button.quick-btn:hover:not(:disabled) { background-color: #ff69b4; }
         .btn-negative { background-color: #e0e0e0 !important; color: #666 !important; }
-        .btn-negative:hover { background-color: #ccc !important; }
+        .btn-negative:hover:not(:disabled) { background-color: #ccc !important; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; transform: none !important; }
 
         .history-container {
-            text-align: left;
-            margin-top: 25px;
-            border-top: 2px dashed #ffe4e1;
-            padding-top: 15px;
+            text-align: left; margin-top: 25px; border-top: 2px dashed #ffe4e1; padding-top: 15px;
         }
-        .history-title {
-            font-size: 14px;
-            color: #ff69b4;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-        .history {
-            max-height: 180px;
-            overflow-y: auto;
-        }
+        .history-title { font-size: 14px; color: #ff69b4; font-weight: bold; margin-bottom: 10px; }
+        .history { max-height: 180px; overflow-y: auto; }
         .history-item {
-            font-size: 13px;
-            margin-bottom: 8px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background: #fafafa;
-            padding: 8px;
-            border-radius: 8px;
+            font-size: 13px; margin-bottom: 8px; display: flex; justify-content: space-between;
+            align-items: center; background: #fafafa; padding: 8px; border-radius: 8px;
         }
         .time { color: #aaa; font-size: 11px; }
         .reset-btn {
-            background-color: transparent;
-            border: 1px solid #ffb6c1;
-            color: #ff69b4;
-            margin-top: 15px;
-            padding: 8px 12px;
-            font-size: 12px;
-            border-radius: 8px;
-            cursor: pointer;
+            background-color: transparent; border: 1px solid #ffb6c1; color: #ff69b4;
+            margin-top: 15px; padding: 8px 12px; font-size: 12px; border-radius: 8px; cursor: pointer;
         }
-        .reset-btn:hover { background-color: #fff0f5; }
+        .reset-btn:hover:not(:disabled) { background-color: #fff0f5; }
     </style>
 </head>
 <body>
 
     <div class="scoreboard">
+        <div id="syncStatus">☁️ 连接中...</div>
         <h1>💖 专属心动计分板 💖</h1>
         <p class="subtitle">目前对Ta的综合好感度</p>
         
-        <div class="score" id="scoreDisplay">0</div>
+        <div class="score" id="scoreDisplay">...</div>
 
         <div class="custom-input-group">
             <input type="text" id="customReason" placeholder="例如：带了热奶茶 🧋" maxlength="20">
             <input type="number" id="customScore" placeholder="分数 (如 5 或 -2)">
-            <button class="btn-custom" onclick="addCustomScore()">记录 ✏️</button>
+            <button class="btn-custom" onclick="addCustomScore()" id="btnSubmit">记录 ✏️</button>
         </div>
 
         <div class="divider"></div>
-        <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">—— 或者使用快捷打分 ——</p>
+        <p style="font-size: 12px; color: #aaa; margin-bottom: 10px;">—— 快捷打分 ——</p>
 
         <div class="btn-group">
             <button class="quick-btn" onclick="updateScore(5, '夸我好看 🥰')">夸我好看 (+5)</button>
@@ -182,21 +111,42 @@
         </div>
 
         <div class="history-container">
-            <div class="history-title">📝 记账本 (得分明细)</div>
+            <div class="history-title">📝 记账本 (云端同步版)</div>
             <div class="history" id="historyList">
-                </div>
+                <div style="color:#ccc; text-align:center; font-size:12px; padding:10px;">正在努力从云端拉取数据...</div>
+            </div>
         </div>
 
-        <button class="reset-btn" onclick="resetScore()">清空分数 (开启新阶段)</button>
+        <button class="reset-btn" onclick="resetScore()">清空分数 (慎点！会清空云端)</button>
     </div>
 
     <script>
-        let score = localStorage.getItem('crushScore') ? parseInt(localStorage.getItem('crushScore')) : 0;
-        let history = localStorage.getItem('crushHistory') ? JSON.parse(localStorage.getItem('crushHistory')) : [];
+        // ==========================================
+        // ⚠️ 必填区：请在这里填入你刚刚在 JSONBin 申请的两个参数
+        // ==========================================
+        const BIN_ID = '69C0F2B0B7ec241DDC94074f'; 
+        const API_KEY = '$2a$10$EGX5KXw97dhRFhs5xPATb.zRWDYhemq3L/inhpx.oh6qRFxtU9EzW'; 
+        // ==========================================
+
+        const url = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+        let score = 0;
+        let history = [];
+        let isSyncing = false; // 防止重复点击
 
         const scoreDisplay = document.getElementById('scoreDisplay');
         const historyList = document.getElementById('historyList');
+        const syncStatus = document.getElementById('syncStatus');
+        const allButtons = document.querySelectorAll('button');
 
+        // 设置按钮和状态
+        function setStatus(statusText, color, disabled) {
+            syncStatus.innerText = statusText;
+            syncStatus.style.color = color;
+            isSyncing = disabled;
+            allButtons.forEach(btn => btn.disabled = disabled);
+        }
+
+        // 渲染页面内容
         function render() {
             scoreDisplay.innerText = score;
             scoreDisplay.style.transform = 'scale(1.1)';
@@ -204,7 +154,7 @@
 
             historyList.innerHTML = '';
             if (history.length === 0) {
-                historyList.innerHTML = '<div style="color:#ccc; text-align:center; font-size:12px; padding:10px;">暂时还没有记录哦，快去给Ta打分吧！</div>';
+                historyList.innerHTML = '<div style="color:#ccc; text-align:center; font-size:12px; padding:10px;">目前是 0 分哦，快开始打分吧！</div>';
                 return;
             }
 
@@ -221,7 +171,59 @@
             });
         }
 
-        function updateScore(change, reason) {
+        // 1. 从云端读取数据
+        async function loadDataFromCloud() {
+            if (BIN_ID.includes('请在这里填入')) {
+                setStatus('⚠️ 尚未配置云端参数', 'red', true);
+                scoreDisplay.innerText = "Error";
+                return;
+            }
+
+            setStatus('☁️ 云端同步中...', '#ffaa33', true);
+            try {
+                const response = await fetch(url, {
+                    headers: { 'X-Master-Key': API_KEY }
+                });
+                if (!response.ok) throw new Error('网络请求失败');
+                
+                const data = await response.json();
+                score = data.record.score || 0;
+                history = data.record.history || [];
+                
+                render();
+                setStatus('✅ 云端已同步', '#32cd32', false);
+            } catch (error) {
+                console.error(error);
+                setStatus('❌ 同步失败，请重试', 'red', false);
+            }
+        }
+
+        // 2. 将数据保存到云端
+        async function saveDataToCloud() {
+            setStatus('⬆️ 正在上传云端...', '#ffaa33', true);
+            try {
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-Master-Key': API_KEY
+                    },
+                    body: JSON.stringify({ score: score, history: history })
+                });
+                if (!response.ok) throw new Error('保存失败');
+                
+                setStatus('✅ 已保存至云端', '#32cd32', false);
+            } catch (error) {
+                console.error(error);
+                setStatus('❌ 保存失败', 'red', false);
+                alert("保存到云端失败了，检查一下网络哦！");
+            }
+        }
+
+        // 更新分数逻辑
+        async function updateScore(change, reason) {
+            if (isSyncing) return;
+            
             score += change;
             const now = new Date();
             const timeString = `${now.getMonth() + 1}-${now.getDate().toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
@@ -229,13 +231,10 @@
             history.unshift({ change, reason, time: timeString });
             if (history.length > 30) history.pop();
 
-            localStorage.setItem('crushScore', score);
-            localStorage.setItem('crushHistory', JSON.stringify(history));
-            
             render();
+            await saveDataToCloud(); // 立即同步到云端
         }
 
-        // 新增：处理自定义输入的函数
         function addCustomScore() {
             const reasonInput = document.getElementById('customReason');
             const scoreInput = document.getElementById('customScore');
@@ -243,33 +242,25 @@
             const reason = reasonInput.value.trim();
             const change = parseInt(scoreInput.value);
 
-            if (!reason) {
-                alert('要写一下加分/扣分的原因哦！🥰');
-                return;
-            }
-            if (isNaN(change)) {
-                alert('分数记得填数字呀，比如 5 或者 -3 🔢');
-                return;
-            }
+            if (!reason) { alert('要写一下原因哦！🥰'); return; }
+            if (isNaN(change)) { alert('分数记得填数字呀 🔢'); return; }
 
             updateScore(change, reason);
-
-            // 记录成功后清空输入框
             reasonInput.value = '';
             scoreInput.value = '';
         }
 
-        function resetScore() {
-            if (confirm('确定要清空所有分数和记录吗？（也许可以截图发给Ta作为阶段总结哦！）')) {
+        async function resetScore() {
+            if (confirm('确定要清空云端的所有记录吗？Ta也会看到记录归零哦！')) {
                 score = 0;
                 history = [];
-                localStorage.removeItem('crushScore');
-                localStorage.removeItem('crushHistory');
                 render();
+                await saveDataToCloud();
             }
         }
 
-        render();
+        // 页面打开时，自动去云端拉取数据
+        loadDataFromCloud();
     </script>
 </body>
 </html>
