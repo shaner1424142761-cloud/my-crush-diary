@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>回忆相册 · 专属心动空间</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/calendar.css">
+    <link rel="stylesheet" href="css/album.css">
+</head>
+<body>
+    <div id="syncStatus">☁️ 连接云端中...</div>
+
+    <div class="container">
+        <nav class="site-nav" aria-label="主导航">
+            <a href="index.html" class="site-nav__link">随手记</a>
+            <a href="album.html" class="site-nav__link site-nav__link--current">回忆相册</a>
+            <a href="blog.html" class="site-nav__link">恋爱 Blog</a>
+        </nav>
+
+        <main>
+            <div class="panel panel-album">
+                <h2>📷 回忆相册</h2>
+                <p class="framework-hint">可粘贴公开图床/相册链接展示；后续也能改成上传到你自己的存储。</p>
+                <div class="album-grid" id="album-grid"></div>
+                <div class="album-form">
+                    <input type="url" id="album-url" placeholder="图片链接（https://...）" autocomplete="off">
+                    <input type="text" id="album-caption" placeholder="一句话备注（可选）" maxlength="40">
+                    <button type="button" class="btn-album" id="btn-add-album">加入相册</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/constants.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/merge.js"></script>
+    <script src="js/ui/sync-bar.js"></script>
+    <script src="js/util/time.js"></script>
+    <script src="js/ui/love-calendar.js"></script>
+    <script src="js/ui/render-album.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/pages/album.js"></script>
+</body>
+</html>

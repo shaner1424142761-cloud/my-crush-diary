@@ -1,0 +1,100 @@
+/* 固定角挂历：撕历风格，三页共用（仅宽屏显示，手机端隐藏） */
+
+.wall-calendar {
+    position: fixed;
+    z-index: 50;
+    top: max(10px, env(safe-area-inset-top, 0px));
+    right: max(10px, env(safe-area-inset-right, 0px));
+    width: 108px;
+    pointer-events: none;
+    user-select: none;
+    filter: drop-shadow(0 10px 22px rgba(236, 72, 153, 0.22));
+}
+
+.wall-calendar__hook {
+    width: 28px;
+    height: 14px;
+    margin: 0 auto -2px;
+    border: 3px solid #f472b6;
+    border-bottom: none;
+    border-radius: 14px 14px 0 0;
+    box-sizing: border-box;
+    background: linear-gradient(180deg, #fde68a 0%, #fbbf24 100%);
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.65) inset;
+}
+
+.wall-calendar__sheet {
+    background: linear-gradient(180deg, #fffdf8 0%, #fff1f5 100%);
+    border: 1px solid #fda4af;
+    border-radius: 2px 2px 6px 6px;
+    overflow: hidden;
+    box-shadow:
+        0 1px 0 rgba(255, 255, 255, 0.95) inset,
+        0 2px 0 rgba(244, 114, 182, 0.12) inset;
+}
+
+.wall-calendar__header {
+    background: linear-gradient(180deg, #fb7185 0%, #e11d48 55%, #be123c 100%);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-align: center;
+    padding: 6px 4px;
+    line-height: 1.2;
+    text-shadow: 0 1px 0 rgba(0, 0, 0, 0.12);
+}
+
+.wall-calendar__day {
+    font-size: 40px;
+    line-height: 0.95;
+    font-weight: 800;
+    color: #9d174d;
+    text-align: center;
+    padding: 8px 4px 2px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.03em;
+}
+
+.wall-calendar__weekday {
+    font-size: 11px;
+    color: #db2777;
+    text-align: center;
+    font-weight: 600;
+    padding-bottom: 6px;
+}
+
+.wall-calendar__rip {
+    height: 0;
+    border-top: 1px dashed #f9a8d4;
+    margin: 0 8px;
+}
+
+.wall-calendar__together {
+    padding: 8px 6px 10px;
+    font-size: 10px;
+    font-weight: 600;
+    color: #831843;
+    line-height: 1.25;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.15em 0.25em;
+}
+
+.wall-calendar__together-num {
+    font-size: 16px;
+    font-weight: 800;
+    line-height: 1;
+    color: #ec4899;
+    font-variant-numeric: tabular-nums;
+}
+
+/* 手机与小屏平板：不显示挂历 */
+@media (max-width: 760px) {
+    .wall-calendar {
+        display: none !important;
+    }
+}

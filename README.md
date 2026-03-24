@@ -1,1 +1,3 @@
 ## yyf and zxr's ~~galgame~~ Romance Memoir
+
+v0.0.2

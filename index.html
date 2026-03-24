@@ -3,510 +3,93 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>专属心动空间 💖</title>
-    <style>
-        body {
-            font-family: 'PingFang SC', 'Microsoft YaHei', sans-serif;
-            background-color: #fcf4f4;
-            color: #5a3e3e;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px 10px;
-            margin: 0;
-        }
-        #syncStatus {
-            font-size: 12px; color: #ffaa33; font-weight: bold; margin-bottom: 10px;
-            background: white; padding: 5px 15px; border-radius: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-        }
-        .container {
-            width: 100%; max-width: 500px; display: flex; flex-direction: column; gap: 20px;
-        }
-        .panel {
-            background: white; border-radius: 20px; padding: 25px 20px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.05); text-align: center; position: relative;
-        }
-        
-        .panel-ta { border-top: 5px solid #ffb6c1; }
-        .panel-ta h2 { color: #ff69b4; }
-        .panel-ta .score { color: #ff1493; }
-        .panel-ta .btn-custom { background-color: #ff69b4; color: white; }
-        .panel-ta .quick-btn { background-color: #ffb6c1; color: white; }
-        
-        .panel-my { border-top: 5px solid #87cefa; }
-        .panel-my h2 { color: #4682b4; }
-        .panel-my .score { color: #1e90ff; }
-        .panel-my .btn-custom { background-color: #4682b4; color: white; }
-        .panel-my .quick-btn { background-color: #87cefa; color: white; }
-
-        .panel-msg { border-top: 5px solid #dda0dd; background: #fffaf0; }
-        .panel-msg h2 { color: #ba55d3; display: flex; justify-content: center; align-items: center; gap: 10px; }
-        .msg-count { font-size: 12px; background: #f3e5f5; color: #ba55d3; padding: 2px 8px; border-radius: 10px; font-weight: normal; }
-
-        h2 { font-size: 20px; margin: 0 0 5px 0; }
-        p.subtitle { font-size: 12px; color: #999; margin-top: 0; margin-bottom: 15px; }
-        .score { font-size: 60px; font-weight: bold; margin: 10px 0; transition: transform 0.2s; }
-        
-        .custom-input-group {
-            display: flex; gap: 5px; margin-bottom: 15px; background: #f9f9f9; padding: 10px; border-radius: 12px;
-        }
-        input {
-            padding: 8px; border: 1px solid #eee; border-radius: 8px; outline: none; font-size: 13px; width: 100%;
-            box-sizing: border-box;
-        }
-        input:focus { border-color: #ccc; }
-        .input-reason { flex: 2; }
-        .input-score { flex: 1; min-width: 60px; }
-        button {
-            border: none; border-radius: 8px; padding: 8px 12px; font-size: 13px; cursor: pointer;
-            transition: all 0.2s; font-weight: bold; white-space: nowrap;
-        }
-        button:hover:not(:disabled) { transform: translateY(-2px); filter: brightness(0.9); }
-        button:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; }
-
-        .btn-group { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 15px; }
-        .btn-negative { background-color: #e0e0e0 !important; color: #666 !important; }
-
-        .history-title { font-size: 13px; font-weight: bold; margin-bottom: 10px; text-align: left; color: #666;}
-        .history { max-height: 120px; overflow-y: auto; text-align: left; }
-        .history-item {
-            font-size: 12px; margin-bottom: 6px; display: flex; justify-content: space-between;
-            background: #fafafa; padding: 6px 10px; border-radius: 6px; border-left: 3px solid #ccc;
-        }
-        .time { color: #aaa; font-size: 10px; }
-
-        .msg-list {
-            max-height: 200px; overflow-y: auto; text-align: left; margin-bottom: 15px;
-            display: flex; flex-direction: column; gap: 10px; padding: 5px;
-        }
-        .msg-item {
-            background: white; padding: 10px 15px; border-radius: 15px; font-size: 13px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05); align-self: flex-start; max-width: 85%;
-            word-break: break-all;
-        }
-        .msg-time { font-size: 10px; color: #aaa; margin-top: 5px; text-align: right; }
-        .msg-input-box { display: flex; gap: 8px; margin-bottom: 10px; }
-        .msg-input-box input { flex: 1; border: 2px solid #dda0dd; }
-        .msg-input-box button { background: #ba55d3; color: white; }
-        
-        .export-btn { 
-            background: transparent; color: #ba55d3; border: 1px solid #dda0dd; 
-            width: 100%; font-size: 12px; padding: 6px; margin-top: 5px;
-        }
-        .export-btn:hover { background: #f3e5f5; }
-
-    </style>
+    <title>galgame里就是这样的！！！</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/calendar.css">
+    <link rel="stylesheet" href="css/home.css">
 </head>
 <body>
-
     <div id="syncStatus">☁️ 连接云端中...</div>
 
     <div class="container">
-        
-        <div class="panel panel-ta">
-            <h2>🌸 YYF的得分 🌸</h2>
-            <p class="subtitle">ZXR给YYF打的分，目前好感度</p>
-            <div class="score" id="score-ta">...</div>
+        <nav class="site-nav" aria-label="主导航">
+            <a href="index.html" class="site-nav__link site-nav__link--current">随手记</a>
+            <a href="album.html" class="site-nav__link">回忆相册</a>
+            <a href="blog.html" class="site-nav__link">恋爱 Blog</a>
+        </nav>
 
-            <div class="custom-input-group">
-                <input type="text" id="reason-ta" class="input-reason" placeholder="原因 (例: 带了奶茶)" maxlength="20">
-                <input type="number" id="input-score-ta" class="input-score" placeholder="分数">
-                <button class="btn-custom" onclick="addCustomScore('ta')">记录</button>
+        <main>
+            <div class="panel panel-ta">
+                <h2>YYF 的得分</h2>
+                <p class="subtitle">ZXR给YYF打的分，目前好感度</p>
+                <div class="score" id="score-ta">...</div>
+
+                <div class="custom-input-group">
+                    <input type="text" id="reason-ta" class="input-reason" placeholder="原因 (例: 带了奶茶)" maxlength="20">
+                    <input type="number" id="input-score-ta" class="input-score" placeholder="分数">
+                    <button type="button" class="btn-custom" id="btn-record-ta">记录</button>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="quick-btn" id="btn-ta-plus5">超棒 (+5)</button>
+                    <button type="button" class="quick-btn" id="btn-ta-plus2">秒回 (+2)</button>
+                    <button type="button" class="quick-btn btn-negative" id="btn-ta-minus3">惹生气 (-3)</button>
+                </div>
+
+                <div class="history-title">📝 记账本</div>
+                <div class="history" id="history-ta"></div>
             </div>
 
-            <div class="btn-group">
-                <button class="quick-btn" onclick="updateScore('ta', 5, '表现超棒 🥰')">超棒 (+5)</button>
-                <button class="quick-btn" onclick="updateScore('ta', 2, '秒回消息 💬')">秒回 (+2)</button>
-                <button class="quick-btn btn-negative" onclick="updateScore('ta', -3, '惹我生气 😠')">惹生气 (-3)</button>
+            <div class="panel panel-my">
+                <h2>ZXR 的得分</h2>
+                <p class="subtitle">YYF给ZXR打的分，求生欲测试</p>
+                <div class="score" id="score-my">...</div>
+
+                <div class="custom-input-group">
+                    <input type="text" id="reason-my" class="input-reason" placeholder="原因 (例: 今天很可爱)" maxlength="20">
+                    <input type="number" id="input-score-my" class="input-score" placeholder="分数">
+                    <button type="button" class="btn-custom" id="btn-record-my">记录</button>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="quick-btn" id="btn-my-plus5">超可爱 (+5)</button>
+                    <button type="button" class="quick-btn" id="btn-my-plus2">贴心 (+2)</button>
+                    <button type="button" class="quick-btn btn-negative" id="btn-my-minus3">小脾气 (-3)</button>
+                </div>
+
+                <div class="history-title">📝 记账本</div>
+                <div class="history" id="history-my"></div>
             </div>
 
-            <div class="history-title">📝 记账本</div>
-            <div class="history" id="history-ta"></div>
-        </div>
+            <div class="panel panel-msg">
+                <h2>💌 悄悄话留言板 <span class="msg-count" id="msg-counter">0/50</span></h2>
+                <p class="subtitle">有什么想对彼此说的，写在这里吧</p>
 
-        <div class="panel panel-my">
-            <h2>🐳 ZXR的得分 🐳</h2>
-            <p class="subtitle">YYF给ZXR打的分，求生欲测试</p>
-            <div class="score" id="score-my">...</div>
+                <div class="msg-list" id="msg-list">
+                    <div style="color:#aaa; text-align:center; font-size:12px; margin-top:20px;">加载中…</div>
+                </div>
 
-            <div class="custom-input-group">
-                <input type="text" id="reason-my" class="input-reason" placeholder="原因 (例: 今天很可爱)" maxlength="20">
-                <input type="number" id="input-score-my" class="input-score" placeholder="分数">
-                <button class="btn-custom" onclick="addCustomScore('my')">记录</button>
+                <div class="msg-input-box">
+                    <input type="text" id="msg-input" placeholder="输入你想说的话..." maxlength="50">
+                    <button type="button" id="btn-msg-send">发送留言 🚀</button>
+                </div>
+
+                <button type="button" class="export-btn" id="btn-msg-export">📥 导出并保存过往留言</button>
             </div>
-
-            <div class="btn-group">
-                <button class="quick-btn" onclick="updateScore('my', 5, '眼光真好 🥰')">超可爱 (+5)</button>
-                <button class="quick-btn" onclick="updateScore('my', 2, '主动报备 📱')">贴心 (+2)</button>
-                <button class="quick-btn btn-negative" onclick="updateScore('my', -3, '无理取闹 🐷')">小脾气 (-3)</button>
-            </div>
-
-            <div class="history-title">📝 记账本</div>
-            <div class="history" id="history-my"></div>
-        </div>
-
-        <div class="panel panel-msg">
-            <h2>💌 悄悄话留言板 <span class="msg-count" id="msg-counter">0/50</span></h2>
-            <p class="subtitle">有什么想对彼此说的，写在这里吧</p>
-            
-            <div class="msg-list" id="msg-list">
-                <div style="color:#aaa; text-align:center; font-size:12px; margin-top:20px;">还没有留言哦，来说第一句话吧！</div>
-            </div>
-
-            <div class="msg-input-box">
-                <input type="text" id="msg-input" placeholder="输入你想说的话..." maxlength="50">
-                <button onclick="addMessage()">发送留言 🚀</button>
-            </div>
-            
-            <button class="export-btn" onclick="exportMessages()">📥 导出并保存过往留言</button>
-        </div>
-
+        </main>
     </div>
 
-    <script>
-        // ==========================================
-        // ⚠️ 必填区：替换下面的 ID 和 KEY
-        // ==========================================
-        const BIN_ID = '69C0F2B0B7ec241DDC94074f'; 
-        const API_KEY = '$2a$10$EGX5KXw97dhRFhs5xPATb.zRWDYhemq3L/inhpx.oh6qRFxtU9EzW'; 
-        // ==========================================
-
-
-        // 💡 修复重点：专门区分了“读取链接”和“写入链接”，并加上了 /latest 确保拉取最新
-        const fetchUrl = `https://api.jsonbin.io/v3/b/${BIN_ID}/latest`;
-        const updateUrl = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
-        
-        const STORAGE_KEY = 'myCrushDiary_backup_v1';
-        const MAX_HISTORY = 30;
-        const MAX_MESSAGES = 50;
-
-        let cloudData = { taScore: 0, taHistory: [], myScore: 0, myHistory: [], messages: [] };
-        let isSyncing = false;
-
-        function loadLocalBackup() {
-            try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (!raw) return null;
-                const o = JSON.parse(raw);
-                if (!o || typeof o !== 'object') return null;
-                return {
-                    taScore: Number(o.taScore) || 0,
-                    taHistory: Array.isArray(o.taHistory) ? o.taHistory : [],
-                    myScore: Number(o.myScore) || 0,
-                    myHistory: Array.isArray(o.myHistory) ? o.myHistory : [],
-                    messages: Array.isArray(o.messages) ? o.messages : []
-                };
-            } catch (_) { return null; }
-        }
-
-        function saveLocalBackup(data) {
-            try {
-                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-            } catch (_) { /* 私密模式等 */ }
-        }
-
-        function historyKey(item) {
-            return `${item.time}|${item.reason}|${item.change}`;
-        }
-
-        function messageKey(m) {
-            return `${m.time}|${m.text}`;
-        }
-
-        /** 合并两端数据，避免多标签/旧缓存 PUT 把云端新数据盖掉 */
-        function mergeRecords(remote, local) {
-            const r = remote || {};
-            const l = local || {};
-            const taHist = [];
-            const seenTa = new Set();
-            for (const arr of [r.taHistory || [], l.taHistory || []]) {
-                for (const item of arr) {
-                    if (!item || typeof item.change !== 'number') continue;
-                    const k = historyKey(item);
-                    if (seenTa.has(k)) continue;
-                    seenTa.add(k);
-                    taHist.push(item);
-                }
-            }
-            const myHist = [];
-            const seenMy = new Set();
-            for (const arr of [r.myHistory || [], l.myHistory || []]) {
-                for (const item of arr) {
-                    if (!item || typeof item.change !== 'number') continue;
-                    const k = historyKey(item);
-                    if (seenMy.has(k)) continue;
-                    seenMy.add(k);
-                    myHist.push(item);
-                }
-            }
-            const msgs = [];
-            const seenMsg = new Set();
-            for (const arr of [r.messages || [], l.messages || []]) {
-                for (const m of arr) {
-                    if (!m || typeof m.text !== 'string') continue;
-                    const k = messageKey(m);
-                    if (seenMsg.has(k)) continue;
-                    seenMsg.add(k);
-                    msgs.push(m);
-                }
-            }
-            taHist.sort((a, b) => (b.time || '').localeCompare(a.time || ''));
-            myHist.sort((a, b) => (b.time || '').localeCompare(a.time || ''));
-            const taHistory = taHist.slice(0, MAX_HISTORY);
-            const myHistory = myHist.slice(0, MAX_HISTORY);
-            const messages = msgs.slice(-MAX_MESSAGES);
-            const taScoreHist = taHistory.reduce((s, h) => s + h.change, 0);
-            const myScoreHist = myHistory.reduce((s, h) => s + h.change, 0);
-            const taScore = taHistory.length > 0 ? taScoreHist : Math.max(Number(r.taScore) || 0, Number(l.taScore) || 0);
-            const myScore = myHistory.length > 0 ? myScoreHist : Math.max(Number(r.myScore) || 0, Number(l.myScore) || 0);
-            return { taScore, taHistory, myScore, myHistory, messages };
-        }
-
-        function isCloudEmpty(d) {
-            if (!d) return true;
-            const noHist = (!d.taHistory || d.taHistory.length === 0) && (!d.myHistory || d.myHistory.length === 0);
-            const noMsg = !d.messages || d.messages.length === 0;
-            const zeroScore = (d.taScore === 0 || d.taScore === undefined) && (d.myScore === 0 || d.myScore === undefined);
-            return noHist && noMsg && zeroScore;
-        }
-
-        async function fetchLatestRecord() {
-            const response = await fetch(fetchUrl + '?t=' + Date.now(), {
-                headers: { 'X-Master-Key': API_KEY, 'Cache-Control': 'no-cache' },
-                cache: 'no-store'
-            });
-            if (!response.ok) throw new Error('拉取失败');
-            const data = await response.json();
-            const rec = data.record;
-            if (!rec || typeof rec !== 'object') return null;
-            return {
-                taScore: rec.taScore !== undefined ? rec.taScore : (rec.score || 0),
-                taHistory: rec.taHistory || rec.history || [],
-                myScore: rec.myScore || 0,
-                myHistory: rec.myHistory || [],
-                messages: rec.messages || []
-            };
-        }
-
-        function normalizeFetched(fetched) {
-            return {
-                taScore: fetched.taScore !== undefined ? fetched.taScore : (fetched.score || 0),
-                taHistory: fetched.taHistory || fetched.history || [],
-                myScore: fetched.myScore || 0,
-                myHistory: fetched.myHistory || [],
-                messages: fetched.messages || []
-            };
-        }
-
-        const syncStatus = document.getElementById('syncStatus');
-        const allButtons = document.querySelectorAll('button');
-
-        function setStatus(text, color, disabled) {
-            syncStatus.innerText = text;
-            syncStatus.style.color = color;
-            isSyncing = disabled;
-            allButtons.forEach(btn => btn.disabled = disabled);
-        }
-
-        function getTimeString() {
-            const now = new Date();
-            return `${now.getMonth() + 1}-${now.getDate().toString().padStart(2, '0')} ${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
-        }
-
-        function render() {
-            document.getElementById('score-ta').innerText = cloudData.taScore;
-            renderHistory('history-ta', cloudData.taHistory, '#ff1493');
-
-            document.getElementById('score-my').innerText = cloudData.myScore;
-            renderHistory('history-my', cloudData.myHistory, '#1e90ff');
-
-            const msgListEl = document.getElementById('msg-list');
-            const msgCounter = document.getElementById('msg-counter');
-            
-            const msgCount = cloudData.messages ? cloudData.messages.length : 0;
-            // 确保如果原来没有 msgCounter 元素时不报错
-            if(msgCounter) {
-                msgCounter.innerText = `${msgCount}/${MAX_MESSAGES}`;
-                if (msgCount >= MAX_MESSAGES - 5) {
-                    msgCounter.style.color = "red";
-                    msgCounter.style.fontWeight = "bold";
-                } else {
-                    msgCounter.style.color = "#ba55d3";
-                    msgCounter.style.fontWeight = "normal";
-                }
-            }
-
-            msgListEl.innerHTML = '';
-            if (msgCount === 0) {
-                msgListEl.innerHTML = '<div style="color:#aaa; text-align:center; font-size:12px; margin-top:20px;">还没有留言哦，来说第一句话吧！</div>';
-            } else {
-                cloudData.messages.forEach(msg => {
-                    const div = document.createElement('div');
-                    div.className = 'msg-item';
-                    div.innerHTML = `<div>${msg.text}</div><div class="msg-time">${msg.time}</div>`;
-                    msgListEl.appendChild(div);
-                });
-                msgListEl.scrollTop = msgListEl.scrollHeight;
-            }
-        }
-
-        function renderHistory(elementId, historyArray, color) {
-            const el = document.getElementById(elementId);
-            el.innerHTML = '';
-            if (!historyArray || historyArray.length === 0) {
-                el.innerHTML = '<div style="color:#ccc; font-size:11px;">暂无记录~</div>';
-                return;
-            }
-            historyArray.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'history-item';
-                div.style.borderLeftColor = item.change > 0 ? color : '#ccc';
-                const sign = item.change > 0 ? '+' : '';
-                const fontColor = item.change > 0 ? color : '#666';
-                div.innerHTML = `
-                    <span>${item.reason} <span style="color:${fontColor}; font-weight:bold;">${sign}${item.change}</span></span>
-                    <span class="time">${item.time}</span>
-                `;
-                el.appendChild(div);
-            });
-        }
-
-        async function loadDataFromCloud() {
-            if (BIN_ID.includes('这里填入')) return;
-            setStatus('☁️ 强制拉取最新...', '#ffaa33', true);
-            try {
-                const response = await fetch(fetchUrl + '?t=' + Date.now(), {
-                    headers: { 'X-Master-Key': API_KEY, 'Cache-Control': 'no-cache' },
-                    cache: 'no-store'
-                });
-                if (!response.ok) throw new Error('网络请求失败');
-                const data = await response.json();
-                const fetched = data.record;
-                if (!fetched || typeof fetched !== 'object') throw new Error('云端数据格式异常');
-
-                let normalized = normalizeFetched(fetched);
-                const backup = loadLocalBackup();
-
-                // 云端被误覆盖成「全空」但本机有备份时，用合并结果恢复并写回云端
-                if (isCloudEmpty(normalized) && backup && !isCloudEmpty(backup)) {
-                    normalized = mergeRecords(normalized, backup);
-                    cloudData = normalized;
-                    render();
-                    setStatus('📦 已从本机备份合并，正在写回云端...', '#ffaa33', true);
-                    await saveDataToCloud({ skipRefetch: true });
-                    return;
-                }
-
-                cloudData = mergeRecords(normalized, backup || normalized);
-                saveLocalBackup(cloudData);
-                render();
-                setStatus('✅ 数据已最新', '#32cd32', false);
-            } catch (error) {
-                const backup = loadLocalBackup();
-                if (backup && !isCloudEmpty(backup)) {
-                    cloudData = backup;
-                    render();
-                    setStatus('⚠️ 云端不可用，已显示本机备份（换网络后可再试同步）', '#ff8800', false);
-                } else {
-                    setStatus('❌ 同步失败', 'red', false);
-                }
-            }
-        }
-
-        async function saveDataToCloud(options = {}) {
-            setStatus('⬆️ 上传中...', '#ffaa33', true);
-            try {
-                if (!options.skipRefetch) {
-                    try {
-                        const remote = await fetchLatestRecord();
-                        cloudData = mergeRecords(remote, cloudData);
-                    } catch (_) {
-                        /* 拉取失败仍尝试上传当前内存数据，避免仅因 GET 失败而丢改 */
-                    }
-                }
-                const response = await fetch(updateUrl, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Master-Key': API_KEY,
-                        'X-Bin-Versioning': 'false'
-                    },
-                    body: JSON.stringify(cloudData)
-                });
-                if (!response.ok) throw new Error('保存失败');
-                saveLocalBackup(cloudData);
-                setStatus('✅ 数据已保存', '#32cd32', false);
-            } catch (error) {
-                saveLocalBackup(cloudData);
-                setStatus('❌ 保存失败（已写入本机备份）', 'red', false);
-            }
-        }
-
-        async function updateScore(target, change, reason) {
-            if (isSyncing) return;
-            const newRecord = { change, reason, time: getTimeString() };
-            if (target === 'ta') {
-                cloudData.taScore += change; cloudData.taHistory.unshift(newRecord);
-                if (cloudData.taHistory.length > MAX_HISTORY) cloudData.taHistory.pop();
-            } else if (target === 'my') {
-                cloudData.myScore += change; cloudData.myHistory.unshift(newRecord);
-                if (cloudData.myHistory.length > MAX_HISTORY) cloudData.myHistory.pop();
-            }
-            render(); await saveDataToCloud();
-        }
-
-        function addCustomScore(target) {
-            const reason = document.getElementById(`reason-${target}`).value.trim();
-            const change = parseInt(document.getElementById(`input-score-${target}`).value);
-            if (!reason) { alert('要写原因哦！'); return; }
-            if (isNaN(change)) { alert('记得填数字🔢'); return; }
-            updateScore(target, change, reason);
-            document.getElementById(`reason-${target}`).value = '';
-            document.getElementById(`input-score-${target}`).value = '';
-        }
-
-        async function addMessage() {
-            if (isSyncing) return;
-            const msgInput = document.getElementById('msg-input');
-            const text = msgInput.value.trim();
-            if (!text) { alert('你还没有写留言呢！'); return; }
-
-            if (cloudData.messages && cloudData.messages.length >= MAX_MESSAGES) {
-                const wantExport = confirm('⚠️ 留言板快装不下啦！\n\n需要现在先把之前的留言导出保存下来吗？');
-                if (wantExport) {
-                    exportMessages();
-                    return; 
-                }
-            }
-
-            cloudData.messages.push({ text: text, time: getTimeString() });
-            if (cloudData.messages.length > MAX_MESSAGES) cloudData.messages.shift();
-
-            msgInput.value = '';
-            render();
-            await saveDataToCloud();
-        }
-
-        function exportMessages() {
-            if (!cloudData.messages || cloudData.messages.length === 0) {
-                alert("目前还没有留言可以导出哦~");
-                return;
-            }
-            let textContent = "💖 我们的专属留言板记录 💖\n=================================\n\n";
-            cloudData.messages.forEach(msg => { textContent += `[${msg.time}] ${msg.text}\n`; });
-            textContent += "\n=================================\n导出于：" + getTimeString();
-
-            const blob = new Blob([textContent], { type: "text/plain;charset=utf-8" });
-            const link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "我们的专属心动留言记录.txt";
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            alert("✅ 留言记录已开始下载啦！记得保存好哦~");
-        }
-
-        loadDataFromCloud();
-    </script>
+    <!-- 普通 script 链：避免 file:// 下 ES module 子文件被浏览器拦截导致脚本完全不执行 -->
+    <script src="js/config.js"></script>
+    <script src="js/constants.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/merge.js"></script>
+    <script src="js/ui/sync-bar.js"></script>
+    <script src="js/util/time.js"></script>
+    <script src="js/ui/love-calendar.js"></script>
+    <script src="js/ui/render-home.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/pages/home.js"></script>
 </body>
 </html>

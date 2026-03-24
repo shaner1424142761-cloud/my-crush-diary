@@ -1,0 +1,183 @@
+/* YYF：玫红 / 珊瑚多巴胺 */
+.panel-ta {
+    border-top: 5px solid #ff1493;
+    background: linear-gradient(185deg, #fff0f5 0%, #ffe4ec 35%, #fff5f8 70%, #ffffff 100%);
+    box-shadow: 0 10px 30px rgba(255, 20, 147, 0.2);
+}
+
+.panel-ta h2 {
+    color: #db2777;
+}
+
+.panel-ta .score {
+    color: #ff1493;
+    text-shadow: 0 2px 16px rgba(255, 20, 147, 0.35);
+}
+
+.panel-ta .btn-custom {
+    background: linear-gradient(135deg, #ff2d92 0%, #ff1493 50%, #f472b6 100%);
+    color: white;
+    box-shadow: 0 6px 20px rgba(255, 20, 147, 0.45);
+}
+
+.panel-ta .btn-custom:hover:not(:disabled) {
+    filter: brightness(1.08) saturate(1.05);
+    box-shadow: 0 8px 26px rgba(255, 20, 147, 0.55);
+}
+
+.panel-ta .quick-btn {
+    background: linear-gradient(135deg, #fb7185 0%, #f43f5e 100%);
+    color: white;
+    box-shadow: 0 4px 16px rgba(244, 63, 94, 0.4);
+}
+
+.panel-ta .quick-btn:hover:not(:disabled) {
+    filter: brightness(1.06);
+}
+
+/* ZXR：浅天蓝（干净偏亮，不偏灰） */
+.panel-my {
+    border-top: 5px solid #7dd3fc;
+    background: linear-gradient(185deg, #f0f9ff 0%, #e0f2fe 36%, #f5fbff 72%, #ffffff 100%);
+    box-shadow: 0 10px 28px rgba(125, 211, 252, 0.32);
+}
+
+.panel-my h2 {
+    color: #0284c7;
+}
+
+.panel-my .score {
+    color: #38bdf8;
+    text-shadow: 0 2px 14px rgba(56, 189, 248, 0.4);
+}
+
+.panel-my .btn-custom {
+    background: linear-gradient(135deg, #67e8f9 0%, #38bdf8 48%, #0ea5e9 100%);
+    color: white;
+    box-shadow: 0 6px 22px rgba(14, 165, 233, 0.38);
+}
+
+.panel-my .btn-custom:hover:not(:disabled) {
+    filter: brightness(1.05);
+    box-shadow: 0 8px 26px rgba(14, 165, 233, 0.46);
+}
+
+.panel-my .quick-btn {
+    background: linear-gradient(135deg, #7dd3fc 0%, #3b82f6 100%);
+    color: white;
+    box-shadow: 0 4px 16px rgba(59, 130, 246, 0.34);
+}
+
+.panel-my .quick-btn:hover:not(:disabled) {
+    filter: brightness(1.06);
+}
+
+/* 悄悄话：亮紫 + 青柠点缀 */
+.panel-msg {
+    border-top: 5px solid #a855f7;
+    background: linear-gradient(185deg, #faf5ff 0%, #fae8ff 28%, #fffbeb 55%, #ffffff 100%);
+    box-shadow: 0 10px 30px rgba(168, 85, 247, 0.18);
+}
+
+.panel-msg h2 {
+    color: #9333ea;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.msg-count {
+    font-size: 12px;
+    background: linear-gradient(135deg, #fae8ff 0%, #e9d5ff 100%);
+    color: #7c3aed;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 700;
+    border: 2px solid #c4b5fd;
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.2);
+}
+
+.score {
+    font-size: 60px;
+    font-weight: bold;
+    margin: 10px 0;
+    transition: transform 0.2s;
+}
+
+.msg-list {
+    max-height: 200px;
+    overflow-y: auto;
+    text-align: left;
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 5px;
+}
+
+.msg-item {
+    background: linear-gradient(145deg, #ffffff 0%, #fdf4ff 40%, #ecfeff 100%);
+    padding: 10px 15px;
+    border-radius: 16px;
+    font-size: 13px;
+    border: 2px solid #e9d5ff;
+    box-shadow: 0 6px 18px rgba(168, 85, 247, 0.18);
+    align-self: flex-start;
+    max-width: 85%;
+    word-break: break-all;
+}
+
+.msg-time {
+    font-size: 10px;
+    color: #a78bfa;
+    margin-top: 5px;
+    text-align: right;
+    font-weight: 600;
+}
+
+.msg-input-box {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.msg-input-box input {
+    flex: 1;
+    border: 2px solid #c4b5fd;
+}
+
+.msg-input-box input:focus {
+    border-color: #a855f7;
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
+}
+
+.msg-input-box button {
+    background: linear-gradient(135deg, #c026d3 0%, #7c3aed 50%, #6366f1 100%);
+    color: white;
+    box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);
+}
+
+.msg-input-box button:hover:not(:disabled) {
+    filter: brightness(1.08);
+    box-shadow: 0 8px 22px rgba(192, 38, 211, 0.5);
+}
+
+.export-btn {
+    background: linear-gradient(135deg, #fff 0%, #fce7f3 50%, #faf5ff 100%);
+    color: #a21caf;
+    border: 2px solid #e879f9;
+    width: 100%;
+    font-size: 12px;
+    padding: 6px;
+    margin-top: 5px;
+    font-weight: bold;
+    box-shadow: 0 4px 14px rgba(232, 121, 249, 0.25);
+}
+
+.export-btn:hover {
+    background: linear-gradient(135deg, #fdf4ff 0%, #fce7f3 100%);
+    filter: brightness(1.03);
+}
+
+/* 恋爱天数块不依赖 background-clip，无需额外回退 */
