@@ -176,8 +176,127 @@
         const fetchUrl = `https://api.jsonbin.io/v3/b/${BIN_ID}/latest`;
         const updateUrl = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
         
+        const STORAGE_KEY = 'myCrushDiary_backup_v1';
+        const MAX_HISTORY = 30;
+        const MAX_MESSAGES = 50;
+
         let cloudData = { taScore: 0, taHistory: [], myScore: 0, myHistory: [], messages: [] };
         let isSyncing = false;
+
+        function loadLocalBackup() {
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (!raw) return null;
+                const o = JSON.parse(raw);
+                if (!o || typeof o !== 'object') return null;
+                return {
+                    taScore: Number(o.taScore) || 0,
+                    taHistory: Array.isArray(o.taHistory) ? o.taHistory : [],
+                    myScore: Number(o.myScore) || 0,
+                    myHistory: Array.isArray(o.myHistory) ? o.myHistory : [],
+                    messages: Array.isArray(o.messages) ? o.messages : []
+                };
+            } catch (_) { return null; }
+        }
+
+        function saveLocalBackup(data) {
+            try {
+                localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            } catch (_) { /* 私密模式等 */ }
+        }
+
+        function historyKey(item) {
+            return `${item.time}|${item.reason}|${item.change}`;
+        }
+
+        function messageKey(m) {
+            return `${m.time}|${m.text}`;
+        }
+
+        /** 合并两端数据，避免多标签/旧缓存 PUT 把云端新数据盖掉 */
+        function mergeRecords(remote, local) {
+            const r = remote || {};
+            const l = local || {};
+            const taHist = [];
+            const seenTa = new Set();
+            for (const arr of [r.taHistory || [], l.taHistory || []]) {
+                for (const item of arr) {
+                    if (!item || typeof item.change !== 'number') continue;
+                    const k = historyKey(item);
+                    if (seenTa.has(k)) continue;
+                    seenTa.add(k);
+                    taHist.push(item);
+                }
+            }
+            const myHist = [];
+            const seenMy = new Set();
+            for (const arr of [r.myHistory || [], l.myHistory || []]) {
+                for (const item of arr) {
+                    if (!item || typeof item.change !== 'number') continue;
+                    const k = historyKey(item);
+                    if (seenMy.has(k)) continue;
+                    seenMy.add(k);
+                    myHist.push(item);
+                }
+            }
+            const msgs = [];
+            const seenMsg = new Set();
+            for (const arr of [r.messages || [], l.messages || []]) {
+                for (const m of arr) {
+                    if (!m || typeof m.text !== 'string') continue;
+                    const k = messageKey(m);
+                    if (seenMsg.has(k)) continue;
+                    seenMsg.add(k);
+                    msgs.push(m);
+                }
+            }
+            taHist.sort((a, b) => (b.time || '').localeCompare(a.time || ''));
+            myHist.sort((a, b) => (b.time || '').localeCompare(a.time || ''));
+            const taHistory = taHist.slice(0, MAX_HISTORY);
+            const myHistory = myHist.slice(0, MAX_HISTORY);
+            const messages = msgs.slice(-MAX_MESSAGES);
+            const taScoreHist = taHistory.reduce((s, h) => s + h.change, 0);
+            const myScoreHist = myHistory.reduce((s, h) => s + h.change, 0);
+            const taScore = taHistory.length > 0 ? taScoreHist : Math.max(Number(r.taScore) || 0, Number(l.taScore) || 0);
+            const myScore = myHistory.length > 0 ? myScoreHist : Math.max(Number(r.myScore) || 0, Number(l.myScore) || 0);
+            return { taScore, taHistory, myScore, myHistory, messages };
+        }
+
+        function isCloudEmpty(d) {
+            if (!d) return true;
+            const noHist = (!d.taHistory || d.taHistory.length === 0) && (!d.myHistory || d.myHistory.length === 0);
+            const noMsg = !d.messages || d.messages.length === 0;
+            const zeroScore = (d.taScore === 0 || d.taScore === undefined) && (d.myScore === 0 || d.myScore === undefined);
+            return noHist && noMsg && zeroScore;
+        }
+
+        async function fetchLatestRecord() {
+            const response = await fetch(fetchUrl + '?t=' + Date.now(), {
+                headers: { 'X-Master-Key': API_KEY, 'Cache-Control': 'no-cache' },
+                cache: 'no-store'
+            });
+            if (!response.ok) throw new Error('拉取失败');
+            const data = await response.json();
+            const rec = data.record;
+            if (!rec || typeof rec !== 'object') return null;
+            return {
+                taScore: rec.taScore !== undefined ? rec.taScore : (rec.score || 0),
+                taHistory: rec.taHistory || rec.history || [],
+                myScore: rec.myScore || 0,
+                myHistory: rec.myHistory || [],
+                messages: rec.messages || []
+            };
+        }
+
+        function normalizeFetched(fetched) {
+            return {
+                taScore: fetched.taScore !== undefined ? fetched.taScore : (fetched.score || 0),
+                taHistory: fetched.taHistory || fetched.history || [],
+                myScore: fetched.myScore || 0,
+                myHistory: fetched.myHistory || [],
+                messages: fetched.messages || []
+            };
+        }
 
         const syncStatus = document.getElementById('syncStatus');
         const allButtons = document.querySelectorAll('button');
@@ -207,8 +326,8 @@
             const msgCount = cloudData.messages ? cloudData.messages.length : 0;
             // 确保如果原来没有 msgCounter 元素时不报错
             if(msgCounter) {
-                msgCounter.innerText = `${msgCount}/50`;
-                if (msgCount >= 45) {
+                msgCounter.innerText = `${msgCount}/${MAX_MESSAGES}`;
+                if (msgCount >= MAX_MESSAGES - 5) {
                     msgCounter.style.color = "red";
                     msgCounter.style.fontWeight = "bold";
                 } else {
@@ -256,41 +375,71 @@
             if (BIN_ID.includes('这里填入')) return;
             setStatus('☁️ 强制拉取最新...', '#ffaa33', true);
             try {
-                // 💡 修复重点：加上时间戳 ?t=xxx 且强制 no-store，彻底打破浏览器缓存！
-                const response = await fetch(fetchUrl + '?t=' + new Date().getTime(), { 
+                const response = await fetch(fetchUrl + '?t=' + Date.now(), {
                     headers: { 'X-Master-Key': API_KEY, 'Cache-Control': 'no-cache' },
-                    cache: 'no-store' 
+                    cache: 'no-store'
                 });
                 if (!response.ok) throw new Error('网络请求失败');
                 const data = await response.json();
                 const fetched = data.record;
-                
-                cloudData.taScore = fetched.taScore !== undefined ? fetched.taScore : (fetched.score || 0);
-                cloudData.taHistory = fetched.taHistory || fetched.history || [];
-                cloudData.myScore = fetched.myScore || 0;
-                cloudData.myHistory = fetched.myHistory || [];
-                cloudData.messages = fetched.messages || []; // 如果对方上传了旧数据导致留言丢失，这里会防崩溃
-                
+                if (!fetched || typeof fetched !== 'object') throw new Error('云端数据格式异常');
+
+                let normalized = normalizeFetched(fetched);
+                const backup = loadLocalBackup();
+
+                // 云端被误覆盖成「全空」但本机有备份时，用合并结果恢复并写回云端
+                if (isCloudEmpty(normalized) && backup && !isCloudEmpty(backup)) {
+                    normalized = mergeRecords(normalized, backup);
+                    cloudData = normalized;
+                    render();
+                    setStatus('📦 已从本机备份合并，正在写回云端...', '#ffaa33', true);
+                    await saveDataToCloud({ skipRefetch: true });
+                    return;
+                }
+
+                cloudData = mergeRecords(normalized, backup || normalized);
+                saveLocalBackup(cloudData);
                 render();
                 setStatus('✅ 数据已最新', '#32cd32', false);
-            } catch (error) { setStatus('❌ 同步失败', 'red', false); }
+            } catch (error) {
+                const backup = loadLocalBackup();
+                if (backup && !isCloudEmpty(backup)) {
+                    cloudData = backup;
+                    render();
+                    setStatus('⚠️ 云端不可用，已显示本机备份（换网络后可再试同步）', '#ff8800', false);
+                } else {
+                    setStatus('❌ 同步失败', 'red', false);
+                }
+            }
         }
 
-        async function saveDataToCloud() {
+        async function saveDataToCloud(options = {}) {
             setStatus('⬆️ 上传中...', '#ffaa33', true);
             try {
+                if (!options.skipRefetch) {
+                    try {
+                        const remote = await fetchLatestRecord();
+                        cloudData = mergeRecords(remote, cloudData);
+                    } catch (_) {
+                        /* 拉取失败仍尝试上传当前内存数据，避免仅因 GET 失败而丢改 */
+                    }
+                }
                 const response = await fetch(updateUrl, {
                     method: 'PUT',
-                    headers: { 
-                        'Content-Type': 'application/json', 
+                    headers: {
+                        'Content-Type': 'application/json',
                         'X-Master-Key': API_KEY,
-                        'X-Bin-Versioning': 'false' // 💡 修复重点：关闭版本控制，直接覆盖为最新
+                        'X-Bin-Versioning': 'false'
                     },
                     body: JSON.stringify(cloudData)
                 });
                 if (!response.ok) throw new Error('保存失败');
+                saveLocalBackup(cloudData);
                 setStatus('✅ 数据已保存', '#32cd32', false);
-            } catch (error) { setStatus('❌ 保存失败', 'red', false); }
+            } catch (error) {
+                saveLocalBackup(cloudData);
+                setStatus('❌ 保存失败（已写入本机备份）', 'red', false);
+            }
         }
 
         async function updateScore(target, change, reason) {
@@ -298,10 +447,10 @@
             const newRecord = { change, reason, time: getTimeString() };
             if (target === 'ta') {
                 cloudData.taScore += change; cloudData.taHistory.unshift(newRecord);
-                if (cloudData.taHistory.length > 30) cloudData.taHistory.pop();
+                if (cloudData.taHistory.length > MAX_HISTORY) cloudData.taHistory.pop();
             } else if (target === 'my') {
                 cloudData.myScore += change; cloudData.myHistory.unshift(newRecord);
-                if (cloudData.myHistory.length > 30) cloudData.myHistory.pop();
+                if (cloudData.myHistory.length > MAX_HISTORY) cloudData.myHistory.pop();
             }
             render(); await saveDataToCloud();
         }
@@ -322,7 +471,7 @@
             const text = msgInput.value.trim();
             if (!text) { alert('你还没有写留言呢！'); return; }
 
-            if (cloudData.messages && cloudData.messages.length >= 50) {
+            if (cloudData.messages && cloudData.messages.length >= MAX_MESSAGES) {
                 const wantExport = confirm('⚠️ 留言板快装不下啦！\n\n需要现在先把之前的留言导出保存下来吗？');
                 if (wantExport) {
                     exportMessages();
@@ -331,7 +480,7 @@
             }
 
             cloudData.messages.push({ text: text, time: getTimeString() });
-            if (cloudData.messages.length > 50) cloudData.messages.shift();
+            if (cloudData.messages.length > MAX_MESSAGES) cloudData.messages.shift();
 
             msgInput.value = '';
             render();
