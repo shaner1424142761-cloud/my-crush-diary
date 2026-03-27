@@ -1,0 +1,139 @@
+.panel-wishes {
+    border-top: 5px solid #a78bfa;
+    text-align: left;
+    background: linear-gradient(180deg, #f5f3ff 0%, #faf5ff 45%, #ffffff 100%);
+    box-shadow: 0 8px 24px rgba(167, 139, 250, 0.18);
+}
+
+.panel-wishes h2 {
+    color: #6d28d9;
+    text-align: center;
+}
+
+.wish-form {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    align-items: stretch;
+}
+
+.wish-form input[type="text"] {
+    flex: 1;
+    border: 2px solid #c4b5fd;
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 14px;
+    min-width: 0;
+}
+
+.wish-form input[type="text"]:focus {
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.22);
+    outline: none;
+}
+
+.btn-wish-add {
+    flex-shrink: 0;
+    background: linear-gradient(135deg, #8b5cf6 0%, #a78bfa 100%);
+    color: #fff;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-weight: bold;
+    box-shadow: 0 4px 14px rgba(139, 92, 246, 0.35);
+}
+
+.btn-wish-add:hover:not(:disabled) {
+    filter: brightness(1.06);
+    box-shadow: 0 6px 18px rgba(139, 92, 246, 0.42);
+}
+
+.wish-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    max-height: 360px;
+    overflow-y: auto;
+    text-align: left;
+}
+
+.wish-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 12px 12px 12px 10px;
+    border-radius: 14px;
+    border: 2px solid #ddd6fe;
+    background: linear-gradient(145deg, #ffffff 0%, #faf5ff 100%);
+    box-shadow: 0 2px 10px rgba(167, 139, 250, 0.12);
+    transition: border-color 0.2s, opacity 0.2s;
+}
+
+.wish-item--done {
+    border-color: #c4b5fd;
+    opacity: 0.88;
+}
+
+.wish-item__check {
+    width: 20px;
+    height: 20px;
+    margin-top: 2px;
+    flex-shrink: 0;
+    cursor: pointer;
+    accent-color: #7c3aed;
+}
+
+.wish-item__body {
+    flex: 1;
+    min-width: 0;
+}
+
+.wish-item__text {
+    font-size: 14px;
+    color: #5a3e3e;
+    line-height: 1.45;
+    word-break: break-word;
+}
+
+.wish-item--done .wish-item__text {
+    text-decoration: line-through;
+    color: #a8a29e;
+}
+
+.wish-item__meta {
+    font-size: 11px;
+    color: #a78bfa;
+    margin-top: 4px;
+}
+
+.wish-item__del {
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border-radius: 8px;
+    font-size: 18px;
+    line-height: 1;
+    color: #9ca3af;
+    background: rgba(243, 244, 246, 0.9);
+    border: 1px solid #e5e7eb;
+    cursor: pointer;
+    margin-top: -2px;
+}
+
+.wish-item__del:hover:not(:disabled) {
+    color: #dc2626;
+    background: #fef2f2;
+    border-color: #fecaca;
+}
+
+button.wish-item__del:hover,
+button.wish-item__del:active {
+    transform: none;
+}
+
+.wish-empty {
+    color: #c4b5fd;
+    font-size: 13px;
+    text-align: center;
+    padding: 20px 12px;
+}

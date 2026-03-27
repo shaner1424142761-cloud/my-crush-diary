@@ -15,7 +15,9 @@
             myHistory: rec.myHistory || [],
             messages: rec.messages || [],
             album: rec.album || [],
-            blogPosts: rec.blogPosts || []
+            blogPosts: rec.blogPosts || [],
+            wishes: rec.wishes || [],
+            anniversaries: rec.anniversaries || []
         };
     }
 

@@ -1,0 +1,113 @@
+/* 悄悄话留言板（独立页） */
+.panel-msg {
+    border-top: 5px solid #a855f7;
+    text-align: left;
+    background: linear-gradient(185deg, #faf5ff 0%, #fae8ff 28%, #fffbeb 55%, #ffffff 100%);
+    box-shadow: 0 10px 30px rgba(168, 85, 247, 0.18);
+}
+
+.panel-msg h2 {
+    color: #9333ea;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.msg-count {
+    font-size: 12px;
+    background: linear-gradient(135deg, #fae8ff 0%, #e9d5ff 100%);
+    color: #7c3aed;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-weight: 700;
+    border: 2px solid #c4b5fd;
+    box-shadow: 0 2px 8px rgba(124, 58, 237, 0.2);
+}
+
+.msg-list {
+    max-height: 280px;
+    overflow-y: auto;
+    text-align: left;
+    margin-bottom: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 5px;
+}
+
+.msg-item {
+    background: linear-gradient(145deg, #ffffff 0%, #fdf4ff 40%, #ecfeff 100%);
+    padding: 10px 15px;
+    border-radius: 16px;
+    font-size: 13px;
+    border: 2px solid #e9d5ff;
+    box-shadow: 0 6px 18px rgba(168, 85, 247, 0.18);
+    align-self: flex-start;
+    max-width: 85%;
+    word-break: break-word;
+}
+
+.msg-time {
+    font-size: 10px;
+    color: #a78bfa;
+    margin-top: 5px;
+    text-align: right;
+    font-weight: 600;
+}
+
+.msg-input-box {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.msg-input-box textarea {
+    flex: 1;
+    min-height: 44px;
+    max-height: 200px;
+    resize: vertical;
+    box-sizing: border-box;
+    padding: 10px 12px;
+    font-size: 14px;
+    font-family: inherit;
+    line-height: 1.45;
+    border: 2px solid #c4b5fd;
+    border-radius: 8px;
+}
+
+.msg-input-box textarea:focus {
+    border-color: #a855f7;
+    box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.2);
+    outline: none;
+}
+
+.msg-input-box button {
+    background: linear-gradient(135deg, #c026d3 0%, #7c3aed 50%, #6366f1 100%);
+    color: white;
+    box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);
+}
+
+.msg-input-box button:hover:not(:disabled) {
+    filter: brightness(1.08);
+    box-shadow: 0 8px 22px rgba(192, 38, 211, 0.5);
+}
+
+.export-btn {
+    background: linear-gradient(135deg, #fff 0%, #fce7f3 50%, #faf5ff 100%);
+    color: #a21caf;
+    border: 2px solid #e879f9;
+    width: 100%;
+    font-size: 12px;
+    padding: 6px;
+    margin-top: 5px;
+    font-weight: bold;
+    box-shadow: 0 4px 14px rgba(232, 121, 249, 0.25);
+}
+
+.export-btn:hover {
+    background: linear-gradient(135deg, #fdf4ff 0%, #fce7f3 100%);
+    filter: brightness(1.03);
+}

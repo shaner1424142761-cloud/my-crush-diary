@@ -1,41 +1,309 @@
-.site-nav {
-    display: flex;
-    gap: 8px;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin-bottom: 4px;
-    width: 100%;
+/* 顶栏高度（与占位条、抽屉起始位置共用，需含刘海安全区） */
+:root {
+    --app-topbar-row-h: 48px;
+}
+
+/* 顶部导航栏：全宽固定 + 半透明毛玻璃（风格接近 BIT101 类站点顶栏） */
+.app-topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1020;
+    padding-top: env(safe-area-inset-top, 0px);
+    background: rgba(255, 255, 255, 0.78);
+    backdrop-filter: saturate(160%) blur(14px);
+    -webkit-backdrop-filter: saturate(160%) blur(14px);
+    border-bottom: 1px solid rgba(253, 164, 175, 0.35);
+    box-shadow: 0 4px 24px rgba(90, 62, 62, 0.06);
     box-sizing: border-box;
 }
 
-.site-nav__link {
+.app-topbar__inner {
+    max-width: 500px;
+    margin: 0 auto;
+    min-height: var(--app-topbar-row-h);
+    padding: 6px 12px 8px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-sizing: border-box;
+}
+
+.app-topbar__menu-host {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.app-topbar__brand {
     flex: 1;
-    min-width: 88px;
-    max-width: 140px;
-    text-align: center;
+    min-width: 0;
+    font-size: 16px;
+    font-weight: bold;
+    color: #9d174d;
     text-decoration: none;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.app-topbar__brand:hover {
+    color: #be185d;
+}
+
+.app-topbar__actions {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+}
+
+.app-topbar__icon-btn {
+    box-sizing: border-box;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    margin: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(253, 164, 175, 0.85);
+    border-radius: 9px;
+    background: rgba(255, 255, 255, 0.92);
+    color: #9d174d;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 0 2px 8px rgba(251, 113, 133, 0.18);
+    transition: box-shadow 0.2s, border-color 0.2s, filter 0.2s, background 0.2s;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.app-topbar__icon-btn:hover {
+    border-color: #fb7185;
+    box-shadow: 0 3px 12px rgba(251, 113, 133, 0.28);
+    filter: brightness(1.02);
+    background: rgba(255, 255, 255, 1);
+}
+
+.app-topbar__icon-btn:focus-visible {
+    outline: 2px solid #ec4899;
+    outline-offset: 2px;
+}
+
+button.app-topbar__icon-btn:hover,
+button.app-topbar__icon-btn:active {
+    transform: none;
+}
+
+.app-topbar__icon {
+    display: block;
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.app-topbar-spacer {
+    align-self: stretch;
+    width: 100%;
+    height: calc(var(--app-topbar-row-h) + env(safe-area-inset-top, 0px));
+    flex-shrink: 0;
+    pointer-events: none;
+}
+
+/* —— 侧边抽屉菜单（由 js/ui/side-menu.js 注入）—— */
+
+.body--side-menu-open {
+    overflow: hidden;
+}
+
+/* 菜单按钮在顶栏内，不用 fixed；button 前缀用于压过 base.css 的 button:hover */
+button.side-menu-toggle {
+    position: relative;
+    z-index: 1;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    margin: 0;
+    border: 1px solid rgba(253, 164, 175, 0.85);
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.92);
+    box-shadow: 0 2px 10px rgba(251, 113, 133, 0.22);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transform: none;
+    transition: box-shadow 0.2s, border-color 0.2s, filter 0.2s, background 0.2s;
+    -webkit-tap-highlight-color: transparent;
+}
+
+button.side-menu-toggle:hover,
+button.side-menu-toggle:active {
+    transform: none;
+}
+
+button.side-menu-toggle:hover {
+    border-color: #fb7185;
+    box-shadow: 0 4px 14px rgba(251, 113, 133, 0.32);
+    filter: brightness(1.02);
+    background: rgba(255, 255, 255, 1);
+}
+
+button.side-menu-toggle:focus-visible {
+    outline: 2px solid #ec4899;
+    outline-offset: 2px;
+}
+
+.side-menu-toggle__icon {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 16px;
+}
+
+.side-menu-toggle__icon span {
+    display: block;
+    height: 2px;
+    border-radius: 1px;
+    background: #9d174d;
+    transition: transform 0.25s ease, opacity 0.2s ease;
+}
+
+.body--side-menu-open .side-menu-toggle__icon span:nth-child(1) {
+    transform: translateY(6px) rotate(45deg);
+}
+
+.body--side-menu-open .side-menu-toggle__icon span:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+}
+
+.body--side-menu-open .side-menu-toggle__icon span:nth-child(3) {
+    transform: translateY(-6px) rotate(-45deg);
+}
+
+.side-menu-backdrop {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: calc(var(--app-topbar-row-h) + env(safe-area-inset-top, 0px));
+    z-index: 1010;
+    background: rgba(90, 62, 62, 0.35);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.28s ease, visibility 0.28s ease;
+}
+
+.body--side-menu-open .side-menu-backdrop {
+    opacity: 1;
+    visibility: visible;
+}
+
+.side-menu {
+    position: fixed;
+    top: calc(var(--app-topbar-row-h) + env(safe-area-inset-top, 0px));
+    left: 0;
+    bottom: 0;
+    z-index: 1011;
+    width: min(280px, 86vw);
+    max-width: 100%;
+    box-sizing: border-box;
+    background: linear-gradient(180deg, #ffffff 0%, #fff8fc 55%, #f5f0ff 100%);
+    border-right: 2px solid #fda4af;
+    box-shadow: 8px 0 32px rgba(236, 72, 153, 0.18);
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+    display: flex;
+    flex-direction: column;
+    padding: 0 0 env(safe-area-inset-bottom, 0) 0;
+}
+
+.body--side-menu-open .side-menu {
+    transform: translateX(0);
+}
+
+.side-menu__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 14px 12px 18px;
+    border-bottom: 1px solid rgba(253, 164, 175, 0.45);
+    flex-shrink: 0;
+}
+
+.side-menu__title {
+    font-size: 15px;
+    font-weight: bold;
+    color: #9d174d;
+}
+
+.side-menu__close {
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border-radius: 10px;
+    font-size: 22px;
+    line-height: 1;
+    color: #5a3e3e;
+    background: linear-gradient(145deg, #fff5f8 0%, #fce7f3 100%);
+    border: 1px solid #fbcfe8;
+    cursor: pointer;
+    transition: transform 0.2s, filter 0.2s;
+}
+
+button.side-menu__close:hover {
+    transform: scale(1.05);
+    filter: brightness(0.97);
+}
+
+.side-menu__close:focus-visible {
+    outline: 2px solid #ec4899;
+    outline-offset: 2px;
+}
+
+.side-menu__nav {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 18px 14px 18px 18px;
+    overflow-y: auto;
+}
+
+.side-menu__link {
+    text-decoration: none;
+    text-align: left;
     background: linear-gradient(145deg, #ffffff 0%, #fff7fb 100%);
     color: #5a3e3e;
     border: 2px solid #fda4af;
-    border-radius: 999px;
-    padding: 10px 12px;
-    font-size: 13px;
+    border-radius: 12px;
+    padding: 12px 14px;
+    font-size: 14px;
     font-weight: bold;
-    box-shadow: 0 4px 16px rgba(251, 113, 133, 0.28);
-    box-sizing: border-box;
+    box-shadow: 0 3px 12px rgba(251, 113, 133, 0.2);
     transition: box-shadow 0.2s, border-color 0.2s, filter 0.2s;
 }
 
-.site-nav__link:hover {
+.side-menu__link:hover {
     border-color: #fb7185;
-    box-shadow: 0 6px 22px rgba(251, 113, 133, 0.38);
+    box-shadow: 0 5px 16px rgba(251, 113, 133, 0.32);
     filter: brightness(1.02);
 }
 
-.site-nav__link--current {
+.side-menu__link--current {
     background: linear-gradient(135deg, #fce7f3 0%, #ddd6fe 45%, #cffafe 100%);
     border-color: #ec4899;
     color: #9d174d;
-    box-shadow: 0 8px 24px rgba(236, 72, 153, 0.35);
+    box-shadow: 0 6px 20px rgba(236, 72, 153, 0.3);
     pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .side-menu-backdrop,
+    .side-menu,
+    .side-menu-toggle__icon span {
+        transition: none;
+    }
 }

@@ -7,7 +7,9 @@
             myHistory: [],
             messages: [],
             album: [],
-            blogPosts: []
+            blogPosts: [],
+            wishes: [],
+            anniversaries: []
         };
     };
     CD.store = {
@@ -27,7 +29,9 @@
                 myHistory: Array.isArray(o.myHistory) ? o.myHistory : [],
                 messages: Array.isArray(o.messages) ? o.messages : [],
                 album: Array.isArray(o.album) ? o.album : [],
-                blogPosts: Array.isArray(o.blogPosts) ? o.blogPosts : []
+                blogPosts: Array.isArray(o.blogPosts) ? o.blogPosts : [],
+                wishes: Array.isArray(o.wishes) ? o.wishes : [],
+                anniversaries: Array.isArray(o.anniversaries) ? o.anniversaries : []
             };
         } catch (e) {
             return null;
