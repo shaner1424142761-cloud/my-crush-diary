@@ -1,6 +1,11 @@
 (function (CD) {
+    CD.newHistoryItemId = function () {
+        return 'h-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+    };
+
     function historyKey(item) {
-        return item.time + '|' + item.reason + '|' + item.change;
+        if (item && typeof item.id === 'string' && item.id) return item.id;
+        return (item.time || '') + '|' + (item.reason || '') + '|' + item.change;
     }
     function messageKey(m) {
         return m.time + '|' + m.text;
@@ -68,8 +73,10 @@
 
         taHist.sort(function (a, b) { return (b.time || '').localeCompare(a.time || ''); });
         myHist.sort(function (a, b) { return (b.time || '').localeCompare(a.time || ''); });
-        var taHistory = taHist.slice(0, CD.MAX_HISTORY);
-        var myHistory = myHist.slice(0, CD.MAX_HISTORY);
+        var taScoreHistSum = taHist.reduce(function (s, h) { return s + h.change; }, 0);
+        var myScoreHistSum = myHist.reduce(function (s, h) { return s + h.change; }, 0);
+        var taHistory = taHist;
+        var myHistory = myHist;
         var messages = msgs;
 
         var albumMerged = [];
@@ -166,10 +173,10 @@
         annivArr.sort(function (a, b) { return (b.updatedAt || 0) - (a.updatedAt || 0); });
         var anniversaries = annivArr.slice(0, CD.MAX_ANNIVERSARIES);
 
-        var taScoreHist = taHistory.reduce(function (s, h) { return s + h.change; }, 0);
-        var myScoreHist = myHistory.reduce(function (s, h) { return s + h.change; }, 0);
-        var taScore = taHistory.length > 0 ? taScoreHist : Math.max(Number(r.taScore) || 0, Number(l.taScore) || 0);
-        var myScore = myHistory.length > 0 ? myScoreHist : Math.max(Number(r.myScore) || 0, Number(l.myScore) || 0);
+        var taScoreMeta = Math.max(Number(r.taScore) || 0, Number(l.taScore) || 0);
+        var myScoreMeta = Math.max(Number(r.myScore) || 0, Number(l.myScore) || 0);
+        var taScore = taHist.length > 0 ? Math.max(taScoreHistSum, taScoreMeta) : taScoreMeta;
+        var myScore = myHist.length > 0 ? Math.max(myScoreHistSum, myScoreMeta) : myScoreMeta;
 
         return {
             taScore: taScore,

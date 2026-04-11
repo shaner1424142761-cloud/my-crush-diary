@@ -5,15 +5,18 @@
 
     async function updateScore(target, change, reason) {
         if (CD.store.isSyncing) return;
-        var newRecord = { change: change, reason: reason, time: CD.getTimeString() };
+        var newRecord = {
+            id: CD.newHistoryItemId(),
+            change: change,
+            reason: reason,
+            time: CD.getTimeString()
+        };
         if (target === 'ta') {
             CD.store.cloudData.taScore += change;
             CD.store.cloudData.taHistory.unshift(newRecord);
-            if (CD.store.cloudData.taHistory.length > CD.MAX_HISTORY) CD.store.cloudData.taHistory.pop();
         } else if (target === 'my') {
             CD.store.cloudData.myScore += change;
             CD.store.cloudData.myHistory.unshift(newRecord);
-            if (CD.store.cloudData.myHistory.length > CD.MAX_HISTORY) CD.store.cloudData.myHistory.pop();
         }
         CD.renderHome();
         await CD.saveDataToCloud();
