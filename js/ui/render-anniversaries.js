@@ -59,6 +59,8 @@
             empty.className = 'anniv-empty';
             empty.textContent = '还没有纪念日～记下第一次见面的日子、在一起的日期吧';
             list.appendChild(empty);
+            if (CD.markNavSectionRead) CD.markNavSectionRead('anniversaries');
+            if (CD.refreshNavBadges) CD.refreshNavBadges();
             return;
         }
         items.sort(function (a, b) {
@@ -128,5 +130,7 @@
             row.appendChild(del);
             list.appendChild(row);
         });
+        if (CD.markNavSectionRead) CD.markNavSectionRead('anniversaries');
+        if (CD.refreshNavBadges) CD.refreshNavBadges();
     };
 })(window.CrushDiary);

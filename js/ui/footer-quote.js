@@ -286,12 +286,20 @@
         { text: '后海有树的院子，夏代有工的玉，此时此刻的云，二十来岁的你。', cite: '冯唐《可遇不可求的事》' }
     ];
 
-    var pick = QUOTES[Math.floor(Math.random() * QUOTES.length)];
+    /* 按本地日历日固定选一句：同一天内不变，次日自动换 */
+    function indexForLocalDay(len) {
+        var now = new Date();
+        var dayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+        var dayEpoch = Math.floor(dayStart / 86400000);
+        return ((dayEpoch * 2654435761) >>> 0) % len;
+    }
+
+    var pick = QUOTES[indexForLocalDay(QUOTES.length)];
 
     var footer = document.createElement('footer');
     footer.className = 'app-footer';
     footer.setAttribute('role', 'contentinfo');
-    footer.setAttribute('aria-label', '诗词与情话');
+    footer.setAttribute('aria-label', '今日诗词与情话');
 
     var inner = document.createElement('div');
     inner.className = 'app-footer__inner';

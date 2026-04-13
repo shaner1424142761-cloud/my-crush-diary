@@ -216,4 +216,13 @@
             anniversaries: fetched.anniversaries || []
         };
     };
+
+    CD.keys = {
+        history: historyKey,
+        message: messageKey,
+        album: albumKey,
+        blog: blogKey,
+        wish: wishStableId,
+        anniversary: annivStableId
+    };
 })(window.CrushDiary);

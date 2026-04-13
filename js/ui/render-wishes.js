@@ -9,6 +9,8 @@
             empty.className = 'wish-empty';
             empty.textContent = '还没有愿望～写下第一件想一起做的事吧';
             list.appendChild(empty);
+            if (CD.markNavSectionRead) CD.markNavSectionRead('wishes');
+            if (CD.refreshNavBadges) CD.refreshNavBadges();
             return;
         }
         items.forEach(function (w) {
@@ -46,5 +48,7 @@
             row.appendChild(del);
             list.appendChild(row);
         });
+        if (CD.markNavSectionRead) CD.markNavSectionRead('wishes');
+        if (CD.refreshNavBadges) CD.refreshNavBadges();
     };
 })(window.CrushDiary);

@@ -9,6 +9,8 @@
             empty.style.cssText = 'grid-column:1/-1;text-align:center;color:#bbb;font-size:12px;padding:20px 8px;';
             empty.textContent = '还没有照片～ 粘贴图片链接即可加入（支持 https 图床）';
             grid.appendChild(empty);
+            if (CD.markNavSectionRead) CD.markNavSectionRead('album');
+            if (CD.refreshNavBadges) CD.refreshNavBadges();
             return;
         }
         items.forEach(function (entry) {
@@ -33,5 +35,7 @@
             card.appendChild(cap);
             grid.appendChild(card);
         });
+        if (CD.markNavSectionRead) CD.markNavSectionRead('album');
+        if (CD.refreshNavBadges) CD.refreshNavBadges();
     };
 })(window.CrushDiary);

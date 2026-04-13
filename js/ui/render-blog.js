@@ -9,6 +9,8 @@
             empty.style.cssText = 'color:#ccc;font-size:12px;text-align:center;padding:16px;';
             empty.textContent = '还没有文章～';
             list.appendChild(empty);
+            if (CD.markNavSectionRead) CD.markNavSectionRead('blog');
+            if (CD.refreshNavBadges) CD.refreshNavBadges();
             return;
         }
         posts.forEach(function (post) {
@@ -27,5 +29,7 @@
             div.appendChild(meta);
             list.appendChild(div);
         });
+        if (CD.markNavSectionRead) CD.markNavSectionRead('blog');
+        if (CD.refreshNavBadges) CD.refreshNavBadges();
     };
 })(window.CrushDiary);

@@ -46,5 +46,8 @@
 
         renderHistory('history-ta', cloudData.taHistory, '#ff1493');
         renderHistory('history-my', cloudData.myHistory, '#38bdf8');
+
+        if (CD.markNavSectionRead) CD.markNavSectionRead('index');
+        if (CD.refreshNavBadges) CD.refreshNavBadges();
     };
 })(window.CrushDiary);

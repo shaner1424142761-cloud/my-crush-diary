@@ -21,6 +21,8 @@
             empty.style.cssText = 'color:#aaa;text-align:center;font-size:12px;margin-top:20px;';
             empty.textContent = '还没有留言哦，来说第一句话吧！';
             msgListEl.appendChild(empty);
+            if (CD.markNavSectionRead) CD.markNavSectionRead('messages');
+            if (CD.refreshNavBadges) CD.refreshNavBadges();
         } else {
             cloudData.messages.forEach(function (msg) {
                 var div = document.createElement('div');
@@ -35,6 +37,8 @@
                 msgListEl.appendChild(div);
             });
             msgListEl.scrollTop = msgListEl.scrollHeight;
+            if (CD.markNavSectionRead) CD.markNavSectionRead('messages');
+            if (CD.refreshNavBadges) CD.refreshNavBadges();
         }
     };
 })(window.CrushDiary);

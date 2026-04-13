@@ -62,7 +62,16 @@
         var a = document.createElement('a');
         a.href = item.href;
         a.className = 'side-menu__link';
-        a.textContent = item.label;
+        a.dataset.navSection = item.id;
+        var label = document.createElement('span');
+        label.className = 'side-menu__link-label';
+        label.textContent = item.label;
+        var badge = document.createElement('span');
+        badge.className = 'side-menu__badge';
+        badge.hidden = true;
+        badge.setAttribute('aria-hidden', 'true');
+        a.appendChild(label);
+        a.appendChild(badge);
         if (item.id === key) {
             a.classList.add('side-menu__link--current');
             a.setAttribute('aria-current', 'page');
@@ -127,8 +136,7 @@
 
     nav.addEventListener('click', function (e) {
         var t = e.target;
-        if (t && t.tagName === 'A') {
-            closeMenu();
-        }
+        var link = t && t.closest ? t.closest('a.side-menu__link') : null;
+        if (link) closeMenu();
     });
 })();

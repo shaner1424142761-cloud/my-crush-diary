@@ -21,16 +21,21 @@
         };
     }
 
+    function afterLoadRender(onRender) {
+        if (onRender) onRender();
+        if (CD.refreshNavBadges) CD.refreshNavBadges();
+    }
+
     CD.loadDataFromCloud = async function (onRender) {
         if (CD.BIN_ID.indexOf('这里填入') !== -1) {
-            if (onRender) onRender();
+            afterLoadRender(onRender);
             return;
         }
 
         var initialBackup = CD.loadLocalBackup();
         if (initialBackup) {
             CD.store.cloudData = initialBackup;
-            if (onRender) onRender();
+            afterLoadRender(onRender);
         }
 
         CD.setStatus('☁️ 正在拉取云端…', '#ffaa33', false);
@@ -50,25 +55,26 @@
 
             if (CD.isCloudEmpty(normalized) && backup && !CD.isCloudEmpty(backup)) {
                 CD.store.cloudData = CD.mergeRecords(normalized, CD.store.cloudData);
-                if (onRender) onRender();
+                afterLoadRender(onRender);
                 CD.setStatus('📦 已从本机备份合并，正在写回云端...', '#ffaa33', true);
                 await CD.saveDataToCloud({ skipRefetch: true });
+                if (CD.refreshNavBadges) CD.refreshNavBadges();
                 return;
             }
 
             CD.store.cloudData = CD.mergeRecords(normalized, CD.store.cloudData);
             CD.saveLocalBackup(CD.store.cloudData);
-            if (onRender) onRender();
+            afterLoadRender(onRender);
             CD.setStatus('✅ 数据已最新', '#32cd32', false);
         } catch (e) {
             var backup2 = CD.loadLocalBackup();
             if (backup2 && !CD.isCloudEmpty(backup2)) {
                 CD.store.cloudData = backup2;
-                if (onRender) onRender();
+                afterLoadRender(onRender);
                 CD.setStatus('⚠️ 云端不可用，已显示本机备份（换网络后可再试同步）', '#ff8800', false);
             } else {
                 CD.setStatus('❌ 同步失败', 'red', false);
-                if (onRender) onRender();
+                afterLoadRender(onRender);
             }
         }
     };
@@ -99,5 +105,6 @@
             CD.saveLocalBackup(CD.store.cloudData);
             CD.setStatus('❌ 保存失败（已写入本机备份）', 'red', false);
         }
+        if (CD.refreshNavBadges) CD.refreshNavBadges();
     };
 })(window.CrushDiary);
