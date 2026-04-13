@@ -28,7 +28,8 @@
     toggle.setAttribute('aria-controls', 'side-menu-panel');
     toggle.setAttribute('aria-label', '打开侧边菜单');
     toggle.innerHTML =
-        '<span class="side-menu-toggle__icon" aria-hidden="true"><span></span><span></span><span></span></span>';
+        '<span class="side-menu-toggle__icon" aria-hidden="true"><span></span><span></span><span></span></span>' +
+        '<span class="side-menu-toggle__badge" hidden aria-hidden="true"></span>';
 
     var backdrop = document.createElement('div');
     backdrop.className = 'side-menu-backdrop';
@@ -94,10 +95,14 @@
     function setOpen(open) {
         document.body.classList.toggle('body--side-menu-open', open);
         toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
-        toggle.setAttribute('aria-label', open ? '关闭侧边菜单' : '打开侧边菜单');
         panel.setAttribute('aria-hidden', open ? 'false' : 'true');
         backdrop.hidden = !open;
         backdrop.setAttribute('aria-hidden', open ? 'false' : 'true');
+        if (window.CrushDiary && window.CrushDiary.refreshNavBadges) {
+            window.CrushDiary.refreshNavBadges();
+        } else {
+            toggle.setAttribute('aria-label', open ? '关闭侧边菜单' : '打开侧边菜单');
+        }
         if (open) {
             closeBtn.focus();
         } else {

@@ -95,6 +95,7 @@
             bootstrapSeenFromCurrent();
         }
         var doc = loadSeenDoc();
+        var anyUnread = false;
         SECTION_IDS.forEach(function (sid) {
             var unread = false;
             if (doc && doc.sections) {
@@ -110,6 +111,7 @@
                     }
                 }
             }
+            if (unread) anyUnread = true;
             var link = document.querySelector('a.side-menu__link[data-nav-section="' + sid + '"]');
             if (!link) return;
             var badge = link.querySelector('.side-menu__badge');
@@ -123,5 +125,15 @@
                 link.removeAttribute('aria-label');
             }
         });
+
+        var menuToggle = document.querySelector('button.side-menu-toggle');
+        if (menuToggle) {
+            var tBadge = menuToggle.querySelector('.side-menu-toggle__badge');
+            if (tBadge) tBadge.hidden = !anyUnread;
+            var menuOpen = document.body.classList.contains('body--side-menu-open');
+            var toggleLbl = menuOpen ? '关闭侧边菜单' : '打开侧边菜单';
+            if (anyUnread && !menuOpen) toggleLbl += '，有新内容';
+            menuToggle.setAttribute('aria-label', toggleLbl);
+        }
     };
 })(window.CrushDiary);

@@ -184,6 +184,22 @@ button.side-menu-toggle:focus-visible {
     transform: translateY(-6px) rotate(-45deg);
 }
 
+.side-menu-toggle__badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: #ef4444;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.95);
+    pointer-events: none;
+}
+
+.side-menu-toggle__badge[hidden] {
+    display: none !important;
+}
+
 .side-menu-backdrop {
     position: fixed;
     left: 0;
