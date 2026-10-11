@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "our-crush-diary-api",
+  "main": "backend/worker.mjs",
+  "compatibility_date": "2026-10-11",
+  "workers_dev": true,
+  "vars": {
+    "JSONBIN_BIN_ID": "",
+    "JSONBIN_KEY_HEADER": "X-Master-Key",
+    "ALLOWED_ORIGINS": "https://shaner1424142761-cloud.github.io"
+  },
+  "durable_objects": {
+    "bindings": [{ "name": "DIARY_STORE", "class_name": "DiaryObject" }]
+  },
+  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["DiaryObject"] }]
+}

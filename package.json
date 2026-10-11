@@ -1,0 +1,17 @@
+{
+  "name": "my-crush-diary",
+  "private": true,
+  "version": "0.2.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test tests/*.test.cjs tests/*.test.mjs",
+    "dev:backend": "wrangler dev --local",
+    "check:backend": "wrangler deploy --dry-run",
+    "deploy:backend": "wrangler deploy"
+  },
+  "devDependencies": {
+    "wrangler": "^4.149.0"
+  }
+}
