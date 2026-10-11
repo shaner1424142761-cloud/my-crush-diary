@@ -18,7 +18,7 @@ function setup(fetch) {
     function run(file) {
         vm.runInContext(fs.readFileSync(path.join(__dirname, '..', file), 'utf8'), context);
     }
-    ['js/constants.js', 'js/store.js', 'js/merge.js'].forEach(run);
+    ['js/constants.js', 'js/store.js', 'shared/records.js', 'js/merge.js'].forEach(run);
     const cd = context.window.CrushDiary;
     cd.setStatus = (text, color, syncing) => { cd.store.isSyncing = syncing; cd.status = text; };
     run('js/api.js');
