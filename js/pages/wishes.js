@@ -31,9 +31,6 @@
             time: CD.getTimeString(),
             updatedAt: now
         });
-        if (CD.store.cloudData.wishes.length > CD.MAX_WISHES) {
-            CD.store.cloudData.wishes.pop();
-        }
         input.value = '';
         CD.renderWishlist();
         await CD.saveDataToCloud();
@@ -59,9 +56,7 @@
         if (CD.store.isSyncing) return;
         var id = t.dataset.wishId;
         if (!confirm('确定删掉这条愿望吗？')) return;
-        CD.store.cloudData.wishes = (CD.store.cloudData.wishes || []).filter(function (x) {
-            return x.id !== id;
-        });
+        CD.deleteRecord('wishes', id);
         CD.renderWishlist();
         await CD.saveDataToCloud();
     });

@@ -1,0 +1,10 @@
+# Personal credentials and record exports must stay off GitHub Pages.
+.env
+.env.*
+!.env.example
+.private-backups/
+backups/
+node_modules/
+.dev.vars
+.dev.vars.*
+.wrangler/

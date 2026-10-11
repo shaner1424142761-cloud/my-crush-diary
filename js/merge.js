@@ -32,13 +32,69 @@
         return 'legacy|anniv|' + t + '|' + title.slice(0, 24) + '|' + d;
     }
 
+    function historySum(history) {
+        var seen = Object.create(null);
+        return (history || []).reduce(function (sum, item) {
+            if (!item || !Number.isFinite(item.change)) return sum;
+            var key = historyKey(item);
+            if (seen[key]) return sum;
+            seen[key] = true;
+            return sum + item.change;
+        }, 0);
+    }
+
+    function scoreBaseline(remote, local, side) {
+        // Preserve any historical balance not represented in the old ledger.
+        // Once migrated, a stale client's total must not recreate that balance.
+        if (remote.scoreBaseline && Number.isFinite(remote.scoreBaseline[side])) {
+            return remote.scoreBaseline[side];
+        }
+        if (local.scoreBaseline && Number.isFinite(local.scoreBaseline[side])) {
+            return local.scoreBaseline[side];
+        }
+        var source = (remote[side + 'History'] || []).length || Number(remote[side + 'Score'])
+            ? remote : local;
+        return (Number(source[side + 'Score']) || 0) - historySum(source[side + 'History']);
+    }
+
+    function mergeDeletions(remote, local) {
+        var result = { wishes: Object.create(null), anniversaries: Object.create(null) };
+        ['wishes', 'anniversaries'].forEach(function (section) {
+            [remote, local].forEach(function (data) {
+                var entries = data.deletedItems && data.deletedItems[section];
+                if (!entries || typeof entries !== 'object' || Array.isArray(entries)) return;
+                Object.keys(entries).forEach(function (id) {
+                    var stamp = entries[id];
+                    if (Number.isFinite(stamp) && stamp >= 0) {
+                        result[section][id] = Math.max(result[section][id] || 0, stamp);
+                    }
+                });
+            });
+        });
+        return result;
+    }
+
+    CD.deleteRecord = function (section, id) {
+        if (section !== 'wishes' && section !== 'anniversaries') return;
+        var data = CD.store.cloudData;
+        var key = section === 'wishes' ? wishStableId : annivStableId;
+        var item = (data[section] || []).filter(function (entry) { return key(entry) === id; })[0];
+        if (!item) return;
+        var deleted = mergeDeletions(data, {});
+        deleted[section][id] = Math.max(deleted[section][id] || 0, Date.now());
+        data.deletedItems = deleted;
+        data[section] = data[section].filter(function (entry) { return key(entry) !== id; });
+        CD.saveLocalBackup(data);
+    };
+
     CD.mergeRecords = function (remote, local) {
         var r = remote || {};
         var l = local || {};
+        var deletedItems = mergeDeletions(r, l);
         var taHist = [];
-        var seenTa = {};
+        var seenTa = Object.create(null);
         function addTa(item) {
-            if (!item || typeof item.change !== 'number') return;
+            if (!item || !Number.isFinite(item.change)) return;
             var k = historyKey(item);
             if (seenTa[k]) return;
             seenTa[k] = true;
@@ -48,9 +104,9 @@
         (l.taHistory || []).forEach(addTa);
 
         var myHist = [];
-        var seenMy = {};
+        var seenMy = Object.create(null);
         function addMy(item) {
-            if (!item || typeof item.change !== 'number') return;
+            if (!item || !Number.isFinite(item.change)) return;
             var k = historyKey(item);
             if (seenMy[k]) return;
             seenMy[k] = true;
@@ -60,7 +116,7 @@
         (l.myHistory || []).forEach(addMy);
 
         var msgs = [];
-        var seenMsg = {};
+        var seenMsg = Object.create(null);
         function addMsg(m) {
             if (!m || typeof m.text !== 'string') return;
             var k = messageKey(m);
@@ -80,7 +136,7 @@
         var messages = msgs;
 
         var albumMerged = [];
-        var seenAlbum = {};
+        var seenAlbum = Object.create(null);
         function addAlbum(a) {
             if (!a || typeof a.url !== 'string' || !a.url.trim()) return;
             var k = albumKey(a);
@@ -95,10 +151,10 @@
         (r.album || []).forEach(addAlbum);
         (l.album || []).forEach(addAlbum);
         albumMerged.sort(function (a, b) { return (b.time || '').localeCompare(a.time || ''); });
-        var album = albumMerged.slice(0, CD.MAX_ALBUM);
+        var album = albumMerged;
 
         var blogMerged = [];
-        var seenBlog = {};
+        var seenBlog = Object.create(null);
         function addBlog(p) {
             if (!p || typeof p !== 'object') return;
             var t = typeof p.title === 'string' ? p.title : '';
@@ -117,12 +173,13 @@
         (r.blogPosts || []).forEach(addBlog);
         (l.blogPosts || []).forEach(addBlog);
         blogMerged.sort(function (a, b) { return (b.time || '').localeCompare(a.time || ''); });
-        var blogPosts = blogMerged.slice(0, CD.MAX_BLOG);
+        var blogPosts = blogMerged;
 
-        var wishMap = {};
+        var wishMap = Object.create(null);
         function addWish(w) {
             if (!w || typeof w.text !== 'string' || !w.text.trim()) return;
             var id = wishStableId(w);
+            if (Object.prototype.hasOwnProperty.call(deletedItems.wishes, id)) return;
             var text = w.text.trim().slice(0, CD.MAX_WISH_TEXT);
             var ua = typeof w.updatedAt === 'number' && !isNaN(w.updatedAt) ? w.updatedAt : 0;
             var norm = {
@@ -144,15 +201,16 @@
             if (a.done !== b.done) return a.done ? 1 : -1;
             return (b.updatedAt || 0) - (a.updatedAt || 0);
         });
-        var wishes = wishesArr.slice(0, CD.MAX_WISHES);
+        var wishes = wishesArr;
 
-        var annivMap = {};
+        var annivMap = Object.create(null);
         function addAnniv(a) {
             if (!a || typeof a !== 'object') return;
             var title = typeof a.title === 'string' ? a.title.trim() : '';
             var dateStr = typeof a.date === 'string' ? a.date.trim() : '';
             if (!title || !/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return;
             var id = annivStableId(a);
+            if (Object.prototype.hasOwnProperty.call(deletedItems.anniversaries, id)) return;
             var ua = typeof a.updatedAt === 'number' && !isNaN(a.updatedAt) ? a.updatedAt : 0;
             var norm = {
                 id: id,
@@ -171,12 +229,10 @@
         (l.anniversaries || []).forEach(addAnniv);
         var annivArr = Object.keys(annivMap).map(function (k) { return annivMap[k]; });
         annivArr.sort(function (a, b) { return (b.updatedAt || 0) - (a.updatedAt || 0); });
-        var anniversaries = annivArr.slice(0, CD.MAX_ANNIVERSARIES);
-
-        var taScoreMeta = Math.max(Number(r.taScore) || 0, Number(l.taScore) || 0);
-        var myScoreMeta = Math.max(Number(r.myScore) || 0, Number(l.myScore) || 0);
-        var taScore = taHist.length > 0 ? Math.max(taScoreHistSum, taScoreMeta) : taScoreMeta;
-        var myScore = myHist.length > 0 ? Math.max(myScoreHistSum, myScoreMeta) : myScoreMeta;
+        var anniversaries = annivArr;
+        var baseline = { ta: scoreBaseline(r, l, 'ta'), my: scoreBaseline(r, l, 'my') };
+        var taScore = taScoreHistSum + baseline.ta;
+        var myScore = myScoreHistSum + baseline.my;
 
         return {
             taScore: taScore,
@@ -187,7 +243,9 @@
             album: album,
             blogPosts: blogPosts,
             wishes: wishes,
-            anniversaries: anniversaries
+            anniversaries: anniversaries,
+            scoreBaseline: baseline,
+            deletedItems: deletedItems
         };
     };
 
@@ -204,6 +262,14 @@
     };
 
     CD.normalizeFetched = function (fetched) {
+        if (!fetched || typeof fetched !== 'object' || Array.isArray(fetched)) {
+            throw new Error('云端数据格式异常');
+        }
+        ['taHistory', 'myHistory', 'history', 'messages', 'album', 'blogPosts', 'wishes', 'anniversaries'].forEach(function (key) {
+            if (fetched[key] !== undefined && !Array.isArray(fetched[key])) {
+                throw new Error('云端数据格式异常：' + key);
+            }
+        });
         return {
             taScore: fetched.taScore !== undefined ? fetched.taScore : (fetched.score || 0),
             taHistory: fetched.taHistory || fetched.history || [],
@@ -213,7 +279,9 @@
             album: fetched.album || [],
             blogPosts: fetched.blogPosts || [],
             wishes: fetched.wishes || [],
-            anniversaries: fetched.anniversaries || []
+            anniversaries: fetched.anniversaries || [],
+            scoreBaseline: fetched.scoreBaseline,
+            deletedItems: fetched.deletedItems || { wishes: {}, anniversaries: {} }
         };
     };
 

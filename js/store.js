@@ -31,7 +31,9 @@
                 album: Array.isArray(o.album) ? o.album : [],
                 blogPosts: Array.isArray(o.blogPosts) ? o.blogPosts : [],
                 wishes: Array.isArray(o.wishes) ? o.wishes : [],
-                anniversaries: Array.isArray(o.anniversaries) ? o.anniversaries : []
+                anniversaries: Array.isArray(o.anniversaries) ? o.anniversaries : [],
+                scoreBaseline: o.scoreBaseline,
+                deletedItems: o.deletedItems || { wishes: {}, anniversaries: {} }
             };
         } catch (e) {
             return null;

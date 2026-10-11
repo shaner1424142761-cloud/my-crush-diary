@@ -15,7 +15,6 @@
         var caption = (capEl && capEl.value || '').trim().slice(0, 40);
         if (!CD.store.cloudData.album) CD.store.cloudData.album = [];
         CD.store.cloudData.album.unshift({ url: url, caption: caption, time: CD.getTimeString() });
-        if (CD.store.cloudData.album.length > CD.MAX_ALBUM) CD.store.cloudData.album.pop();
         urlEl.value = '';
         capEl.value = '';
         CD.renderAlbum();

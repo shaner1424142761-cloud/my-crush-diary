@@ -33,9 +33,6 @@
             time: CD.getTimeString(),
             updatedAt: now
         });
-        if (CD.store.cloudData.anniversaries.length > CD.MAX_ANNIVERSARIES) {
-            CD.store.cloudData.anniversaries.pop();
-        }
         titleEl.value = '';
         dateEl.value = '';
         noteEl.value = '';
@@ -49,9 +46,7 @@
         if (CD.store.isSyncing) return;
         var id = t.dataset.annivId;
         if (!confirm('确定删除这条纪念日吗？')) return;
-        CD.store.cloudData.anniversaries = (CD.store.cloudData.anniversaries || []).filter(function (x) {
-            return x.id !== id;
-        });
+        CD.deleteRecord('anniversaries', id);
         CD.renderAnniversaries();
         await CD.saveDataToCloud();
     });

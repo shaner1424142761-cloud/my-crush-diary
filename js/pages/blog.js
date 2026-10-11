@@ -19,7 +19,6 @@
             body: body.slice(0, 4000),
             time: CD.getTimeString()
         });
-        if (CD.store.cloudData.blogPosts.length > CD.MAX_BLOG) CD.store.cloudData.blogPosts.pop();
         titleEl.value = '';
         bodyEl.value = '';
         CD.renderBlog();
