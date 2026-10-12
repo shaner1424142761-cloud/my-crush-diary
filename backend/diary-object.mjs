@@ -1,6 +1,7 @@
 import '../shared/records.js';
-import {issueToken,passwordMatches,verifyToken} from './auth.mjs';
+import {issueToken,passwordMatches,readSession} from './auth.mjs';
 import {HttpError,json,readJson,validateRecord} from './http.mjs';
+import {authorizeChanges,legacyImport} from './permissions.mjs';
 const rules=globalThis.CrushDiaryRecords.createRecordTools();
 export class DiaryObject {
     constructor(ctx,env,fetcher=globalThis.fetch) {this.ctx=ctx;this.env=env;this.fetcher=fetcher;}
@@ -49,13 +50,15 @@ export class DiaryObject {
         const path=new URL(request.url).pathname;
         if(path==='/auth/login' && request.method==='POST')return this.login(request);
         const token=(request.headers.get('Authorization') || '').replace(/^Bearer /,'');
-        if(!await verifyToken(token,this.env))throw new HttpError(401,'请重新登录。');
-        if(path!=='/diary')throw new HttpError(404,'找不到此接口。');
-        if(request.method==='GET')return json({record:await this.upstream('GET')});
-        if(request.method!=='PUT')throw new HttpError(405,'不支持此操作。');
-        const local=await readJson(request);validateRecord(local);
+        const user=await readSession(token,this.env);
+        if(!user)throw new HttpError(401,'请重新登录。');
+        if(!['/diary','/legacy-import'].includes(path))throw new HttpError(404,'找不到此接口。');
+        if(path==='/diary' && request.method==='GET')return json({record:await this.upstream('GET')});
+        if(request.method!==(path==='/legacy-import'?'POST':'PUT'))throw new HttpError(405,'不支持此操作。');
+        const local=await readJson(request);if(path==='/diary')validateRecord(local);
         const remote=await this.upstream('GET');
-        const record=rules.mergeRecords(remote,local);
+        const safe=path==='/legacy-import'?legacyImport(remote,local,user.id):authorizeChanges(remote,local,user.id);
+        const record=rules.mergeRecords(rules.mergeRecords(remote,{}),safe);
         const snapshots=(await this.ctx.storage.get('snapshots') || []).slice(-2);
         snapshots.push({savedAt:Date.now(),record:remote});
         await this.ctx.storage.put('snapshots',snapshots);

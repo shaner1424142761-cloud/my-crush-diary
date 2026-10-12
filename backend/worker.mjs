@@ -22,7 +22,7 @@ export default {
         }
         const path=new URL(request.url).pathname;
         if(path==='/health' && request.method==='GET')return respond(json({configured:configured(env)}));
-        if(!['/diary','/auth/login','/auth/me'].includes(path))return respond(json({message:'找不到此接口。'},404));
+        if(!['/diary','/legacy-import','/auth/login','/auth/me'].includes(path))return respond(json({message:'找不到此接口。'},404));
         if(!configured(env))return respond(json({message:'后端尚未配置完成。'},503));
         if(path==='/auth/login' && request.method!=='POST')return respond(json({message:'不支持此操作。'},405));
         if(path==='/auth/me'){
@@ -31,7 +31,7 @@ export default {
             const user=auth.startsWith('Bearer ')?await readSession(auth.slice(7),env):null;
             return respond(user?json({user}):json({message:'请重新登录。'},401));
         }
-        if(path==='/diary'){
+        if(path==='/diary' || path==='/legacy-import'){
             const auth=request.headers.get('Authorization') || '';
             if(!auth.startsWith('Bearer ') || !await verifyToken(auth.slice(7),env))return respond(json({message:'请重新登录。'},401));
         }

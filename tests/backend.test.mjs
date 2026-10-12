@@ -77,7 +77,7 @@ test('GET is read-only and two overlapping writes keep both changes',async()=>{
  a.taHistory.push({id:'minus',change:-3,time:'10-02'});a.taScore=10;
  a.deletedItems={wishes:{w:100}};
  b.taHistory.push({id:'plus',change:5,time:'10-03'});b.taScore=18;
- b.messages=[{text:'一起看海',time:'10-03'}];
+ b.messages=[{id:'message',text:'一起看海',time:'10-03'}];
  const replies=await Promise.all([h.request('/diary','PUT',a,token),h.request('/diary','PUT',b,token)]);
  assert.deepEqual(replies.map(r=>r.status),[200,200]);
  assert.equal(h.cloud.taScore,15);assert.equal(h.cloud.wishes.length,0);assert.equal(h.cloud.messages.length,1);
@@ -126,4 +126,25 @@ test('distributed login attempts cannot grow persistent rate storage past its bo
  for(let i=0;i<512;i++)h.storage.set('rate:old'+i,{count:1,expiresAt:Date.now()+900000});
  assert.equal((await h.request('/auth/login','POST',{username:'zxr',password:'bad'})).status,429);
  assert.equal([...h.storage.keys()].filter(k=>k.startsWith('rate:')).length,512);
+});
+
+test('forbidden scoring and editing cannot write upstream, while dual accounts can sync concurrently',async()=>{
+ const h=harness();const yyf=(await issueToken(h.env,'yyf')).token,zxr=(await issueToken(h.env,'zxr')).token;
+ const wrong={...base(),taHistory:[...base().taHistory,{id:'wrong',change:3,time:'today'}]};
+ assert.equal((await h.request('/diary','PUT',wrong,yyf)).status,403);
+ assert.equal((await h.request('/diary','PUT',{taHistory:[{id:'first',change:999,time:'10-01'}]},zxr)).status,409);
+ assert.equal(h.calls.filter(c=>c.method==='PUT').length,0);
+ const a={...base(),myHistory:[{id:'yyf-score',change:-2,time:'today'}],messages:[{id:'a',text:'hello',time:'today'}]};
+ const b={...base(),taHistory:[...base().taHistory,{id:'zxr-score',change:5,time:'today'}],messages:[{id:'b',text:'hello',time:'today'}]};
+ assert.deepEqual((await Promise.all([h.request('/diary','PUT',a,yyf),h.request('/diary','PUT',b,zxr)])).map(r=>r.status),[200,200]);
+ assert.equal(h.cloud.myScore,-2);assert.equal(h.cloud.taScore,18);assert.equal(h.cloud.messages.length,2);
+ assert.equal((await h.request('/diary','PUT',a,yyf)).status,200);assert.equal(h.cloud.myScore,-2);
+});
+
+test('legacy-import uses the same authenticated gate and leaves old messages unsigned',async()=>{
+ const h=harness();const token=(await issueToken(h.env,'yyf')).token;
+ const data={target:'my',history:[{change:-4,time:'past'}],messages:[{text:'past',time:'past'}]};
+ assert.equal((await h.request('/legacy-import','POST',data)).status,401);
+ for(let i=0;i<2;i++)assert.equal((await h.request('/legacy-import','POST',data,token)).status,200);
+ assert.equal(h.cloud.myScore,-4);assert.equal(h.cloud.messages.length,1);assert.equal(h.cloud.messages[0].authorId,undefined);
 });

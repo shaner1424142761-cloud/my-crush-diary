@@ -6,6 +6,7 @@
         return (item.time || '') + '|' + (item.reason || '') + '|' + item.change;
     }
     function messageKey(m) {
+        if (m && typeof m.id === 'string' && m.id) return m.id;
         return m.time + '|' + m.text;
     }
     function albumKey(a) {
