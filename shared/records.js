@@ -43,6 +43,16 @@
         }, 0);
     }
 
+    function historyTimeKey(item) {
+        var time = item.time || '';
+        // Old records have unpadded months; normalize only the sort key.
+        var legacy = /^(\d{1,2})-(\d{1,2})(?:\s+(\d{1,2}):(\d{2}))?$/.exec(time);
+        if (!legacy) return time;
+        return legacy.slice(1).map(function (part) {
+            return (part || '0').padStart(2, '0');
+        }).join('-');
+    }
+
     function scoreBaseline(remote, local, side) {
         // Preserve any historical balance not represented in the old ledger.
         // Once migrated, a stale client's total must not recreate that balance.
@@ -114,8 +124,8 @@
         (r.messages || []).forEach(addMsg);
         (l.messages || []).forEach(addMsg);
 
-        taHist.sort(function (a, b) { return (b.time || '').localeCompare(a.time || ''); });
-        myHist.sort(function (a, b) { return (b.time || '').localeCompare(a.time || ''); });
+        taHist.sort(function (a, b) { return historyTimeKey(b).localeCompare(historyTimeKey(a)); });
+        myHist.sort(function (a, b) { return historyTimeKey(b).localeCompare(historyTimeKey(a)); });
         var taScoreHistSum = taHist.reduce(function (s, h) { return s + h.change; }, 0);
         var myScoreHistSum = myHist.reduce(function (s, h) { return s + h.change; }, 0);
         var taHistory = taHist;

@@ -25,3 +25,14 @@ test('shared rules retain deletion markers and every uncapped memory', () => {
     assert.equal(merged.wishes.length, 59);
     assert.equal(rules.mergeRecords(merged, old).wishes.length, 59);
 });
+
+test('both home ledgers sort legacy unpadded months and days by calendar time',()=>{
+ const rules=tools();const times=['9-30 23:59','10-01 08:00','2-10 09:00','12-01 00:00','10-1 09:00','10-01 09:00','10-01 08:59'];
+ const history=times.map((time,i)=>({id:String(i),time,change:i%2?-1:2,reason:'keep'}));
+ const original=JSON.stringify(history);const merged=rules.mergeRecords({taScore:17,myScore:23,taHistory:history,myHistory:history},{});
+ for(const side of ['ta','my']){
+  assert.deepEqual(Array.from(merged[side+'History'],item=>item.id),['3','4','5','6','1','0','2']);
+  assert.equal(merged[side+'Score'],side==='ta'?17:23);
+ }
+ assert.equal(JSON.stringify(history),original);
+});
