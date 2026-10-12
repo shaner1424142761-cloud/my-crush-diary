@@ -10,7 +10,29 @@
     "ALLOWED_ORIGINS": "https://shaner1424142761-cloud.github.io"
   },
   "durable_objects": {
-    "bindings": [{ "name": "DIARY_STORE", "class_name": "DiaryObject" }]
+    "bindings": [
+      {
+        "name": "DIARY_STORE",
+        "class_name": "DiaryObject"
+      },
+      {
+        "name": "PHOTO_STORE",
+        "class_name": "PhotoObject"
+      }
+    ]
   },
-  "migrations": [{ "tag": "v1", "new_sqlite_classes": ["DiaryObject"] }]
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_sqlite_classes": [
+        "DiaryObject"
+      ]
+    },
+    {
+      "tag": "v2",
+      "new_sqlite_classes": [
+        "PhotoObject"
+      ]
+    }
+  ]
 }

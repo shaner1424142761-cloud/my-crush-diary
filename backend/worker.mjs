@@ -1,5 +1,6 @@
 import {configured,verifyToken,readSession} from './auth.mjs';
 import {json} from './http.mjs';
+export {PhotoObject} from './photo-object.mjs';
 export {DiaryObject} from './diary-object.mjs';
 export default {
     async fetch(request,env) {
@@ -21,8 +22,9 @@ export default {
             return respond(response);
         }
         const path=new URL(request.url).pathname;
-        if(path==='/health' && request.method==='GET')return respond(json({configured:configured(env)}));
-        if(!['/diary','/legacy-import','/auth/login','/auth/me'].includes(path))return respond(json({message:'找不到此接口。'},404));
+        if(path==='/health' && request.method==='GET')return respond(json({configured:configured(env),photosConfigured:!!env.PHOTO_STORE}));
+        const photo=path==='/photo-usage' || path.startsWith('/photos/');
+        if(!photo && !['/diary','/legacy-import','/auth/login','/auth/me'].includes(path))return respond(json({message:'找不到此接口。'},404));
         if(!configured(env))return respond(json({message:'后端尚未配置完成。'},503));
         if(path==='/auth/login' && request.method!=='POST')return respond(json({message:'不支持此操作。'},405));
         if(path==='/auth/me'){
@@ -31,9 +33,14 @@ export default {
             const user=auth.startsWith('Bearer ')?await readSession(auth.slice(7),env):null;
             return respond(user?json({user}):json({message:'请重新登录。'},401));
         }
-        if(path==='/diary' || path==='/legacy-import'){
+        if(photo || path==='/diary' || path==='/legacy-import'){
             const auth=request.headers.get('Authorization') || '';
             if(!auth.startsWith('Bearer ') || !await verifyToken(auth.slice(7),env))return respond(json({message:'请重新登录。'},401));
+        }
+        if(photo){
+            if(!env.PHOTO_STORE)return respond(json({message:'照片服务尚未配置。'},503));
+            try{return respond(await env.PHOTO_STORE.get(env.PHOTO_STORE.idFromName('our-photos')).fetch(request));}
+            catch{return respond(json({message:'照片服务暂时不可用。'},503));}
         }
         try {
             const id=env.DIARY_STORE.idFromName('our-diary');

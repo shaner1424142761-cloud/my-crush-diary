@@ -54,7 +54,7 @@ test('invalid authentication never accesses the cloud',async()=>{
 });
 test('health and error responses contain no secrets or memories',async()=>{
  const h=harness();const response=await h.request('/health');
- assert.deepEqual(await response.json(),{configured:true});
+ assert.deepEqual(await response.json(),{configured:true,photosConfigured:false});
  assert.equal(response.headers.get('Cache-Control'),'no-store');
  const denied=await h.request('/auth/login','POST',{username:'zxr',password:'bad'});
  assert.equal(denied.status,401);
