@@ -42,6 +42,8 @@
     CD.saveLocalBackup = function (data) {
         try {
             localStorage.setItem(CD.STORAGE_KEY, JSON.stringify(data));
-        } catch (e) { /* 私密模式等 */ }
+            if (CD.updateBackupWarning) CD.updateBackupWarning(true);
+            return true;
+        } catch (e) { if (CD.updateBackupWarning) CD.updateBackupWarning(false); return false; }
     };
 })(window.CrushDiary);

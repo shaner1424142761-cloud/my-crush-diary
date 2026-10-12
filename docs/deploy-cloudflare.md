@@ -76,6 +76,8 @@ npm run deploy:backend
 
 截至 2026-10-12，Cloudflare Free 支持 SQLite Durable Objects；Workers 和 Durable Objects 各有每日 100,000 请求额度。免费限额用尽时操作失败，前端保留本机备份，等待额度重置后重试，不升级付费。具体存储/计算限制以[官方定价](https://developers.cloudflare.com/durable-objects/platform/pricing/)及[Workers 定价](https://developers.cloudflare.com/workers/platform/pricing/)为准。原 JSONBin 的存储大小和请求限制仍适用，本方案不会为满足上限截掉旧记录。
 
+浏览器拒绝本机备份写入时，页面会持续提示“仅保留在当前页面，请勿刷新或关闭”。此时退出会隐藏记录，但把未同步内容保留在页面内存，重新登录继续合并；关闭或刷新页面仍会丢失不能持久保存的内容。请先恢复网络并确认云端保存成功。
+
 上游不可用或数据异常时，后端不写云端；客户端先保存本机操作，再报告同步失败。不要清理网站数据，也不要用空对象“初始化”或恢复云端。暂时停用前端写入、核对完整备份与上游版本，解决问题后再恢复服务。不要回退到含旧密钥的公开前端。
 
 若需要强制全部设备重新登录，更新 `SESSION_SECRET`；只改共同密码不会撤销已经签发的 7 天令牌。

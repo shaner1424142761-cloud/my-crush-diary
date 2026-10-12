@@ -21,7 +21,7 @@ function setup({configured=true,blockedStorage=false}={}) {
   }
  });
  vm.runInContext(fs.readFileSync(path.join(__dirname,'../js/ui/auth.js'),'utf8'),ctx);
- return {cd,local,session,calls,classes,node};
+ return {cd,local,session,calls,classes,node,ctx};
 }
 test('logged-out visitors are gated and cannot fetch private records',async()=>{
  const env=setup();const waiting=env.cd.ensureAuthenticated();
@@ -61,4 +61,53 @@ test('storage failures keep a usable memory session with a visible warning',asyn
  assert.equal(env.local.size,0);assert.equal(env.session.size,0);
  assert.ok(env.node('auth-session-warning').textContent.length>0);
  assert.equal(await env.cd.ensureAuthenticated(),true);
+});
+
+function integrate(env){
+ for(const file of ['js/constants.js','js/store.js','shared/records.js','js/merge.js','js/api.js'])vm.runInContext(fs.readFileSync(path.join(__dirname,'../',file),'utf8'),env.ctx);
+ env.cd.setStatus=(text,color,busy)=>{env.cd.status=text;env.cd.store.isSyncing=!!busy||env.cd.auth.locked;};
+}
+const record=()=>({taScore:0,taHistory:[],myScore:0,myHistory:[],messages:[{text:'pending-only',time:'10-01'}],album:[],blogPosts:[],wishes:[],anniversaries:[]});
+test('logout during a pending sync cannot overwrite pending-only backup',async()=>{
+ const env=setup();await env.cd.login('private-password',false);integrate(env);
+ env.cd.store.cloudData=record();let release;env.ctx.fetch=()=>new Promise(resolve=>release=resolve);
+ const saving=env.cd.saveDataToCloud();env.cd.logout();
+ release(Response.json({record:{}}));await saving;
+ assert.equal(env.cd.loadLocalBackup().messages[0]?.text,'pending-only');
+ assert.equal(env.cd.auth.locked,true);
+});
+test('blocked backup storage preserves pending memory across refresh and re-login',async()=>{
+ const env=setup({blockedStorage:true});await env.cd.login('private-password',false);integrate(env);
+ env.local.set('myCrushDiary_backup_v1',JSON.stringify({...record(),messages:[]}));env.cd.store.cloudData=record();
+ env.ctx.fetch=async()=>{throw new Error('offline');};await env.cd.saveDataToCloud();
+ assert.equal(env.cd.status.includes('已写入本机备份'),false);
+ assert.ok(env.node('auth-backup-warning').textContent.includes('请勿刷新'));
+
+ env.ctx.fetch=async url=>url.endsWith('/auth/login')?Response.json({token:'second-token',expiresAt:Math.floor(Date.now()/1000)+604800}):Response.json({record:{}});
+ await env.cd.loadDataFromCloud();assert.equal(env.cd.store.cloudData.messages[0]?.text,'pending-only');
+ env.cd.logout();await env.cd.login('private-password',false);
+ assert.equal(env.cd.store.cloudData.messages[0]?.text,'pending-only');
+});
+
+for(const phase of ['PUT response','JSON parsing'])test('logout protects the backup during delayed '+phase,async()=>{
+ const env=setup();await env.cd.login('private-password',false);integrate(env);env.cd.store.cloudData=record();
+ let release,entered;const paused=new Promise(resolve=>entered=resolve);
+ env.ctx.fetch=async(url,options={})=>{
+  if(options.method!=='PUT')return Response.json({record:{}});
+  if(phase==='JSON parsing')return {ok:true,status:200,json:()=>{entered();return new Promise(resolve=>release=resolve);}};
+  entered();return new Promise(resolve=>release=resolve);
+ };
+ const saving=env.cd.saveDataToCloud();await paused;env.cd.logout();
+ release(phase==='JSON parsing'?{record:{}}:Response.json({record:{}}));await saving;
+ assert.equal(env.cd.loadLocalBackup().messages[0]?.text,'pending-only');assert.equal(env.cd.auth.locked,true);
+ assert.equal(env.cd.status.includes('已保存'),false);
+});
+test('a stale 401 cannot clear a newly established session',async()=>{
+ const env=setup();await env.cd.login('private-password',false);
+ let release;env.ctx.fetch=()=>new Promise(resolve=>release=resolve);
+ const old=env.cd.authenticatedFetch('/diary');env.cd.logout();
+ env.ctx.fetch=async()=>Response.json({token:'new-session',expiresAt:Math.floor(Date.now()/1000)+604800});await env.cd.login('private-password',false);
+ release(Response.json({},{status:401}));await assert.rejects(old,error=>error.superseded===true);
+ assert.equal(env.cd.auth.locked,false);assert.equal(await env.cd.ensureAuthenticated(),true);
+ assert.ok([...env.session.values()].some(value=>value.includes('new-session')));
 });

@@ -1,6 +1,6 @@
 # Private Sync Backend Implementation Plan
 
-> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
+> **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [x]`) syntax for tracking.
 
 **Goal:** 免费地保护云端密钥，并让两个人安全保存现有恋爱记录。
 
@@ -62,14 +62,14 @@
 - 浏览器 `CD.mergeRecords`、`CD.normalizeFetched`、`CD.keys` 接口不变。
 - `node tools/audit-snapshot.cjs <snapshot.json>` 返回 0 表示所有原内容和总分保留；失败返回非 0。
 
-- [ ] 写失败测试：`shared rules preserve future cloud fields`，远端 `{ futureSection: { note: 'keep' } }` 合并后该对象仍等于原值。
-- [ ] 写共享工具的迁移测试，复用现有积分、删除、去重、超限保存断言；脚本在无 `window` 的环境中也能运行。
-- [ ] 运行 `node --test`，确认新增测试因共享接口尚不存在而失败。
-- [ ] 将纯数据函数迁入 `shared/records.js`，提供上述工厂；保持浏览器适配层中的删除和本机备份副作用。
-- [ ] 在全部 6 页的 `js/merge.js` 之前加载共享脚本，不改成导致原有脚本链时序变化的 module 页面入口。
-- [ ] 实现快照核对工具，接受保存的 JSONBin 响应或直接记录；输出条目数与是否完整，不输出正文或密钥。
-- [ ] 运行 `node --test` 和离线真实快照核对；必须保持全部 7 类记录、原内容、两人总分一致。
-- [ ] 提交：`git commit -m "Extract shared lossless record merge rules"`。
+- [x] 写失败测试：`shared rules preserve future cloud fields`，远端 `{ futureSection: { note: 'keep' } }` 合并后该对象仍等于原值。
+- [x] 写共享工具的迁移测试，复用现有积分、删除、去重、超限保存断言；脚本在无 `window` 的环境中也能运行。
+- [x] 运行 `node --test`，确认新增测试因共享接口尚不存在而失败。
+- [x] 将纯数据函数迁入 `shared/records.js`，提供上述工厂；保持浏览器适配层中的删除和本机备份副作用。
+- [x] 在全部 6 页的 `js/merge.js` 之前加载共享脚本，不改成导致原有脚本链时序变化的 module 页面入口。
+- [x] 实现快照核对工具，接受保存的 JSONBin 响应或直接记录；输出条目数与是否完整，不输出正文或密钥。
+- [x] 运行 `node --test` 和离线真实快照核对；必须保持全部 7 类记录、原内容、两人总分一致。
+- [x] 提交：`git commit -m "Extract shared lossless record merge rules"`。
 
 ### Task 2: 登录保护与串行保存后端
 
@@ -89,19 +89,19 @@
 - 所有读写路由通过同一个固定命名 DO；它覆盖整个上游网络读改写的串行区间。
 - SQLite 存储最近 3 份保存前快照和带到期时间的限速计数；限速键使用 IP 哈希并清理到期项。
 
-- [ ] 写失败测试：缺失、损坏、超长、已过期的令牌均返回 401，并且没有上游请求；健康检查不返回任何秘密。
-- [ ] 写失败测试：同 IP 前 5 次错误密码为 401，第 6 次 429，15 分钟后可再尝试；重建 DO 实例后计数仍生效。
-- [ ] 写失败测试：合法登录的令牌 7 天后失效；签名被修改无法验证；密码和密钥不出现在响应体。
-- [ ] 写失败测试：GET 不执行 PUT；两个并行保存最后同时保留加分、扣分、留言和删除标记；同请求重试不重复计分。
-- [ ] 写失败测试：拉取失败、格式错误、PUT 失败均不能显示成功；保留保存前快照，快照数量最多 3；响应丢失后的重试幂等。
-- [ ] 写失败测试：CORS preflight 正确；任意 origin 不能借健康检查获得私密数据；未知路由、超大 JSON、非法字段均失败。
-- [ ] 运行 `node --test`，确认新增后端测试失败。
-- [ ] 实现 HMAC-SHA256 签名令牌，严格验证格式、签名、过期时间；使用固定长度摘要比较密码，拒绝缺少 Secret 的配置。
-- [ ] 实现持久化限速与串行保存。上游 URL 固定为 JSONBin；写入带 `X-Bin-Versioning: true`，保留未知远端字段。
-- [ ] 实现路由、鉴权、输入验证、超时和脱敏错误；日志不记录密码、令牌、连接密钥或记录正文。
-- [ ] 配置 `new_sqlite_classes` 类型迁移和 DO binding；只添加 Wrangler 开发依赖，不启用付费功能或定时任务。
-- [ ] 运行 `node --test`、`npx wrangler deploy --dry-run`，以及本地 `wrangler dev --local` 的健康和错误认证请求；不得连接正式 Bin 进行写入测试。
-- [ ] 提交：`git commit -m "Add authenticated free Worker sync backend"`。
+- [x] 写失败测试：缺失、损坏、超长、已过期的令牌均返回 401，并且没有上游请求；健康检查不返回任何秘密。
+- [x] 写失败测试：同 IP 前 5 次错误密码为 401，第 6 次 429，15 分钟后可再尝试；重建 DO 实例后计数仍生效。
+- [x] 写失败测试：合法登录的令牌 7 天后失效；签名被修改无法验证；密码和密钥不出现在响应体。
+- [x] 写失败测试：GET 不执行 PUT；两个并行保存最后同时保留加分、扣分、留言和删除标记；同请求重试不重复计分。
+- [x] 写失败测试：拉取失败、格式错误、PUT 失败均不能显示成功；保留保存前快照，快照数量最多 3；响应丢失后的重试幂等。
+- [x] 写失败测试：CORS preflight 正确；任意 origin 不能借健康检查获得私密数据；未知路由、超大 JSON、非法字段均失败。
+- [x] 运行 `node --test`，确认新增后端测试失败。
+- [x] 实现 HMAC-SHA256 签名令牌，严格验证格式、签名、过期时间；使用固定长度摘要比较密码，拒绝缺少 Secret 的配置。
+- [x] 实现持久化限速与串行保存。上游 URL 固定为 JSONBin；写入带 `X-Bin-Versioning: true`，保留未知远端字段。
+- [x] 实现路由、鉴权、输入验证、超时和脱敏错误；日志不记录密码、令牌、连接密钥或记录正文。
+- [x] 配置 `new_sqlite_classes` 类型迁移和 DO binding；只添加 Wrangler 开发依赖，不启用付费功能或定时任务。
+- [x] 运行 `node --test`、`npx wrangler deploy --dry-run`，以及本地 `wrangler dev --local` 的健康和错误认证请求；不得连接正式 Bin 进行写入测试。
+- [x] 提交：`git commit -m "Add authenticated free Worker sync backend"`。
 
 ### Task 3: 前端登录和安全连接
 
@@ -115,17 +115,17 @@
 - `CD.logout()` 移除两种存储中的令牌、隐藏当前记录并显示登录界面，不删除云端或本机备份。
 - 后端响应最终 `record` 与本机待同步记录合并；只有成功的后端响应才能显示“数据已保存”。
 
-- [ ] 写失败测试：无令牌时不读取云端、不显示原记录；登录成功后才显示记录；退出不调用云端 DELETE/PUT。
-- [ ] 写失败测试：默认只保存在 sessionStorage，记住设备时只保存在 localStorage；密码从不进入存储。
-- [ ] 写失败测试：令牌过期或存储不可用时给出可恢复的状态，未同步记录完整保留；配置为空时不发送网络请求。
-- [ ] 修改现有同步测试，让上游替身使用后端接口契约，保持原来全部数据修复断言。
-- [ ] 运行 `node --test`，确认新前端行为失败。
-- [ ] 实现登录界面，匹配现有颜色、字号和移动端宽度，提供密码、记住设备、登录和错误状态，不暴露云端密钥设置到日常流程。
-- [ ] 在现有加载入口等待 `ensureAuthenticated()`；登录过期后冻结写操作，恢复登录后重新拉取再合并。
-- [ ] 改写 API 调用为后端接口；移除公开配置中的 Bin 写入密钥和 JSONBin 请求头；保留原备份键以接续未同步记录。
-- [ ] 给全部页面接入共享登录脚本和退出入口；更新配置提示与测试。
-- [ ] 运行 `node --test`；在本地浏览器逐页验收登录、记住、退出、断网恢复和移动端。使用模拟后端数据，真实写入保持关闭。
-- [ ] 提交：`git commit -m "Connect diary pages through authenticated backend"`。
+- [x] 写失败测试：无令牌时不读取云端、不显示原记录；登录成功后才显示记录；退出不调用云端 DELETE/PUT。
+- [x] 写失败测试：默认只保存在 sessionStorage，记住设备时只保存在 localStorage；密码从不进入存储。
+- [x] 写失败测试：令牌过期或存储不可用时给出可恢复的状态，未同步记录完整保留；配置为空时不发送网络请求。
+- [x] 修改现有同步测试，让上游替身使用后端接口契约，保持原来全部数据修复断言。
+- [x] 运行 `node --test`，确认新前端行为失败。
+- [x] 实现登录界面，匹配现有颜色、字号和移动端宽度，提供密码、记住设备、登录和错误状态，不暴露云端密钥设置到日常流程。
+- [x] 在现有加载入口等待 `ensureAuthenticated()`；登录过期后冻结写操作，恢复登录后重新拉取再合并。
+- [x] 改写 API 调用为后端接口；移除公开配置中的 Bin 写入密钥和 JSONBin 请求头；保留原备份键以接续未同步记录。
+- [x] 给全部页面接入共享登录脚本和退出入口；更新配置提示与测试。
+- [x] 运行 `node --test`；在本地浏览器逐页验收登录、记住、退出、断网恢复和移动端。使用模拟后端数据，真实写入保持关闭。
+- [x] 提交：`git commit -m "Connect diary pages through authenticated backend"`。
 
 ### Task 4: 部署教程、发布检查与用户交接
 
@@ -136,15 +136,15 @@
 - 中文教程以实际命令和设置字段为准，包含 Cloudflare Free、workers.dev、Secrets、测试、GitHub Pages 配置与 JSONBin 旧密钥轮换。
 - 不把 `.dev.vars`、私人备份、日志或有效密钥提交到 GitHub。历史提交中的旧密钥依靠轮换失效，不进行未经授权的历史重写。
 
-- [ ] 写失败测试：临时发布目录包含伪造密钥或私人快照时扫描失败，正常 HTML/CSS/JS 发布集合通过。
-- [ ] 运行 `node --test`，确认发布扫描测试因工具不存在而失败。
-- [ ] 实现发布检查工具，并将测试、后端 dry-run、发布检查命令加入 package scripts。
-- [ ] 编写中文教程：用户已登录 Cloudflare；下一步授权 Wrangler 或使用控制台，保持 Free，配置 Secrets 后才部署。密钥通过本机或服务控制台输入，不要求发到聊天里。
-- [ ] 教程明确先核对正式云端只读快照，再用模拟环境测试写入，最后切前端、轮换旧密钥、验证两人的设备。
-- [ ] 写明未同步记录保护、免费额度失败处理、JSONBin 原有限制和不覆盖云端的回退步骤。
-- [ ] 运行 `node --test`、后端 dry-run、发布检查、真实快照离线核对，检查 Git 状态不含任何秘密和私人数据。
-- [ ] 完成一次独立分支审查并处理问题；不得把“代码通过”报告成“线上已经更新”。
-- [ ] 提交：`git commit -m "Document free deployment and verify public files"`。
+- [x] 写失败测试：临时发布目录包含伪造密钥或私人快照时扫描失败，正常 HTML/CSS/JS 发布集合通过。
+- [x] 运行 `node --test`，确认发布扫描测试因工具不存在而失败。
+- [x] 实现发布检查工具，并将测试、后端 dry-run、发布检查命令加入 package scripts。
+- [x] 编写中文教程：用户已登录 Cloudflare；下一步授权 Wrangler 或使用控制台，保持 Free，配置 Secrets 后才部署。密钥通过本机或服务控制台输入，不要求发到聊天里。
+- [x] 教程明确先核对正式云端只读快照，再用模拟环境测试写入，最后切前端、轮换旧密钥、验证两人的设备。
+- [x] 写明未同步记录保护、免费额度失败处理、JSONBin 原有限制和不覆盖云端的回退步骤。
+- [x] 运行 `node --test`、后端 dry-run、发布检查、真实快照离线核对，检查 Git 状态不含任何秘密和私人数据。
+- [x] 完成一次独立分支审查并处理问题；不得把“代码通过”报告成“线上已经更新”。
+- [x] 提交：`git commit -m "Document free deployment and verify public files"`。
 - [ ] 向用户展示本地可审阅结果，明确待用户操作项；获得具体部署授权后，再发布后端和前端并完成只读线上验收。
 
 ## Execution Handoff

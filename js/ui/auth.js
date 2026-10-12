@@ -1,7 +1,7 @@
 (function (CD) {
     var key = 'myCrushDiary_session_v1';
     var session = null, waiting = null, resolveWaiting = null;
-    CD.auth = { locked: true };
+    CD.auth = { locked: true, generation: 0 };
     function storage(name) { try { return name === 'local' ? localStorage : sessionStorage; } catch (_) { return null; } }
     function clearTokens() { ['local', 'session'].forEach(function (name) { try { storage(name).removeItem(key); } catch (_) {} }); }
     function valid() { return session && typeof session.token === 'string' && session.expiresAt > Date.now() / 1000; }
@@ -26,6 +26,8 @@
         document.body.appendChild(panel);
         var warning = document.createElement('p'); warning.id = 'auth-session-warning'; warning.className = 'auth-warning';
         document.body.appendChild(warning);
+        var backupWarning = document.createElement('p'); backupWarning.id = 'auth-backup-warning'; backupWarning.className = 'auth-warning';
+        document.body.appendChild(backupWarning);
         document.getElementById('auth-form').addEventListener('submit', function (event) {
             event.preventDefault();
             CD.login(document.getElementById('auth-password').value, document.getElementById('auth-remember').checked).catch(function () {});
@@ -46,6 +48,9 @@
         try { session = JSON.parse(storage(name).getItem(key)); } catch (_) { session = null; }
         return !!valid();
     });
+    CD.updateBackupWarning = function (available) {
+        mount(); document.getElementById('auth-backup-warning').textContent = available ? '' : '本机备份不可用，未同步记录仅保留在当前页面，请勿刷新或关闭。';
+    };
     CD.ensureAuthenticated = function () {
         mount();
         if (!base()) { lock('日记尚未连接安全服务，请先完成部署配置。'); return Promise.resolve(false); }
@@ -63,7 +68,7 @@
             if (!response.ok) throw new Error(response.status === 429 ? '尝试次数过多，请 15 分钟后重试。' : response.status === 401 ? '密码不正确，请重新输入。' : '暂时无法登录，请检查网络或服务配置。');
             var data = await response.json();
             if (typeof data.token !== 'string' || !Number.isFinite(data.expiresAt) || data.expiresAt <= Date.now() / 1000) throw new Error('登录响应异常，请重试。');
-            session = { token: data.token, expiresAt: data.expiresAt }; clearTokens();
+            session = { token: data.token, expiresAt: data.expiresAt }; CD.auth.generation++; clearTokens();
             document.getElementById('auth-session-warning').textContent = '';
             try { storage(remember ? 'local' : 'session').setItem(key, JSON.stringify(session)); }
             catch (_) { document.getElementById('auth-session-warning').textContent = '浏览器无法保存登录状态；本次仍可使用，刷新后需要重新登录。'; }
@@ -82,16 +87,24 @@
             var expired = new Error('请重新登录'); expired.authRequired = true; throw expired;
         }
         var headers = new Headers(options && options.headers); headers.set('Authorization', 'Bearer ' + session.token);
-        var response = await fetch(base() + path, Object.assign({}, options, { headers: headers, cache: 'no-store' }));
+        var active = session;
+        function changed() { var error = new Error('登录状态已改变'); error.authRequired = true; error.superseded = true; return error; }
+        var response;
+        try { response = await fetch(base() + path, Object.assign({}, options, { headers: headers, cache: 'no-store' })); }
+        catch (error) { if (session !== active) throw changed(); throw error; }
+        if (session !== active) throw changed();
         if (response.status === 401) {
-            session = null; clearTokens(); lock('登录已过期，请重新打开日记。');
+            CD.auth.generation++; session = null; clearTokens(); lock('登录已过期，请重新打开日记。');
             var rejected = new Error('请重新登录'); rejected.authRequired = true; throw rejected;
         }
         return response;
     };
     CD.logout = function () {
-        if (CD.store.cloudData && !CD.isCloudEmpty(CD.store.cloudData)) CD.saveLocalBackup(CD.store.cloudData);
-        session = null; clearTokens(); CD.store.cloudData = CD.defaultCloudData();
+        var backedUp = true;
+        if (CD.store.cloudData && !CD.isCloudEmpty(CD.store.cloudData)) backedUp = CD.saveLocalBackup(CD.store.cloudData);
+        session = null; CD.auth.generation++; clearTokens();
+        if (backedUp !== false) CD.store.cloudData = CD.defaultCloudData();
+        else CD.updateBackupWarning(false);
         lock(''); if (CD.store.onRender) CD.store.onRender();
     };
     lock('');

@@ -1,8 +1,14 @@
 (function (CD) {
+    function generation() { return CD.auth ? CD.auth.generation : 0; }
+    function assertCurrent(value) {
+        if (value !== generation()) { var error = new Error('登录状态已改变'); error.superseded = true; error.authRequired = true; throw error; }
+    }
     async function fetchLatestRecord() {
+        var active = generation();
         var response = await CD.authenticatedFetch('/diary');
         if (!response.ok) throw new Error('拉取失败');
         var data = await response.json();
+        assertCurrent(active);
         var rec = data.record;
         return CD.normalizeFetched(rec);
     }
@@ -16,10 +22,11 @@
         if (CD.store.isSyncing && !(CD.auth && CD.auth.locked)) return;
         CD.store.onRender = onRender;
         if (!(await CD.ensureAuthenticated())) return;
+        var active = generation();
 
         var initialBackup = CD.loadLocalBackup();
         if (initialBackup) {
-            CD.store.cloudData = initialBackup;
+            CD.store.cloudData = CD.mergeRecords(initialBackup, CD.store.cloudData);
             afterLoadRender(onRender);
         }
 
@@ -39,10 +46,14 @@
                 CD.setStatus('✅ 数据已最新', '#32cd32', false);
             }
         } catch (e) {
-            if (e.authRequired) { CD.setStatus('请重新登录，记录仍在本机备份', '#ff8800', false); return; }
+            if (active !== generation() || e.superseded) return;
+            if (e.authRequired) {
+                var backedUp = CD.saveLocalBackup(CD.store.cloudData);
+                CD.setStatus(backedUp === false ? '请重新登录；记录仅在当前页面，请勿刷新' : '请重新登录，记录仍在本机备份', '#ff8800', false); return;
+            }
             var backup2 = CD.loadLocalBackup();
             if (backup2 && !CD.isCloudEmpty(backup2)) {
-                CD.store.cloudData = backup2;
+                CD.store.cloudData = CD.mergeRecords(backup2, CD.store.cloudData);
                 afterLoadRender(onRender);
                 CD.setStatus('⚠️ 云端不可用，已显示本机备份（换网络后可再试同步）', '#ff8800', false);
             } else {
@@ -54,6 +65,7 @@
 
     CD.saveDataToCloud = async function () {
         if (CD.store.isSyncing) return false;
+        var active = generation();
         // Persist the user's action before the first network await.
         CD.saveLocalBackup(CD.store.cloudData);
         CD.setStatus('⬆️ 上传中...', '#ffaa33', true);
@@ -70,13 +82,15 @@
             });
             if (!response.ok) throw new Error('保存失败');
             var data = await response.json();
+            assertCurrent(active);
             CD.store.cloudData = CD.mergeRecords(CD.normalizeFetched(data.record), CD.store.cloudData);
-            CD.saveLocalBackup(CD.store.cloudData);
-            CD.setStatus('✅ 数据已保存', '#32cd32', false);
+            var backedUp = CD.saveLocalBackup(CD.store.cloudData);
+            CD.setStatus(backedUp === false ? '✅ 云端已保存；本机备份不可用' : '✅ 数据已保存', '#32cd32', false);
             saved = true;
         } catch (e) {
-            CD.saveLocalBackup(CD.store.cloudData);
-            CD.setStatus('❌ 保存失败（已写入本机备份）', 'red', false);
+            if (active !== generation() || e.superseded) return false;
+            var backedUp = CD.saveLocalBackup(CD.store.cloudData);
+            CD.setStatus(backedUp === false ? '❌ 保存失败（仅保留在当前页面，请勿刷新或关闭）' : '❌ 保存失败（已写入本机备份）', 'red', false);
         }
         afterLoadRender(CD.store.onRender);
         return saved;
