@@ -51,5 +51,8 @@ export function legacyImport(remote,request,userId){
    const imported={...item,id,importedBy:userId};existing.set(id,imported);return imported;
   });
  };
- return {[field]:recover(request.history,remote[field] || [],rules.keys.history),messages:recover(request.messages,remote.messages || [],rules.keys.message)};
+ const shared={};
+ for(const name of ['album','blogPosts','wishes','anniversaries','deletedItems'])if(request.shared && request.shared[name]!==undefined)shared[name]=request.shared[name];
+ validateRecord(shared);
+ return {...shared,[field]:recover(request.history,remote[field] || [],rules.keys.history),messages:recover(request.messages,remote.messages || [],rules.keys.message)};
 }

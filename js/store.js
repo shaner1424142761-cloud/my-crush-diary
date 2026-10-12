@@ -16,7 +16,7 @@
         cloudData: CD.defaultCloudData(),
         isSyncing: false
     };
-    var activeId=null, suspended=false, buffers=Object.create(null);
+    var activeId=null, suspended=false, buffers=Object.create(null), unsafe=Object.create(null);
     function backupKey(){return activeId?'myCrushDiary_backup_v2_'+activeId:CD.auth?null:CD.STORAGE_KEY;}
     CD.activateUser=function(user){
         if(activeId===user.id){if(suspended)CD.store.cloudData=CD.loadLocalBackup() || CD.defaultCloudData();suspended=false;return;}
@@ -58,9 +58,10 @@
         if(!backupKey())return false;
         try {
             localStorage.setItem(backupKey(), JSON.stringify(data));
-            if (CD.updateBackupWarning) CD.updateBackupWarning(true);
+            unsafe[activeId || 'legacy']=false;
+            if (CD.updateBackupWarning) CD.updateBackupWarning(!Object.keys(unsafe).some(function(id){return unsafe[id];}));
             return true;
-        } catch (e) { if (CD.updateBackupWarning) CD.updateBackupWarning(false); return false; }
+        } catch (e) { unsafe[activeId || 'legacy']=true;if (CD.updateBackupWarning) CD.updateBackupWarning(false); return false; }
     };
     CD.inspectLegacyBackup=function(remote){
         var old;try{old=JSON.parse(localStorage.getItem(CD.STORAGE_KEY));}catch(_){old=null;}
@@ -70,6 +71,22 @@
             var key=field==='messages'?function(x){return (x.time || '')+'|'+x.text;}:function(x){return x.id || (x.time || '')+'|'+(x.reason || '')+'|'+x.change;};
             var existing=new Set((remote[field] || []).map(key));
             result[field]=Array.isArray(items)?items.filter(function(x){return x && !x.authorId && !x.importedBy && !existing.has(key(x)) && !existing.has('import|'+key(Object.assign({},x,{id:undefined})) );}):[];
+        });
+        var keys={album:function(x){return x.id || x.time+'|'+(x.caption || '')+'|'+(x.url || '');},blogPosts:function(x){return x.time+'|'+(x.title || '')+'|'+(x.body || '');},wishes:function(x){return x.id || 'legacy|'+(x.time || '')+'|'+(x.text || '').slice(0,40);},anniversaries:function(x){return x.id || 'legacy|anniv|'+(x.time || '')+'|'+(x.title || '').slice(0,24)+'|'+(x.date || '');}};
+        ['album','blogPosts','wishes','anniversaries'].forEach(function(field){
+            var key=keys[field],existing=new Map((remote[field] || []).map(function(x){return [key(x),x];}));
+            var deleted=remote.deletedItems && remote.deletedItems[field] || {};
+            result[field]=old && Array.isArray(old[field])?old[field].filter(function(x){
+                if(!x || Object.prototype.hasOwnProperty.call(deleted,key(x)))return false;
+                var prior=existing.get(key(x));
+                if(!prior)return true;
+                return (field==='wishes' || field==='anniversaries') && (Number(x.updatedAt) || 0)>(Number(prior.updatedAt) || 0);
+            }):[];
+        });
+        result.deletedItems={wishes:{},anniversaries:{}};
+        ['wishes','anniversaries'].forEach(function(field){
+            var local=old && old.deletedItems && old.deletedItems[field] || {},cloud=remote.deletedItems && remote.deletedItems[field] || {};
+            Object.keys(local).forEach(function(id){if(Number.isFinite(local[id]) && local[id]>=0 && (!Object.prototype.hasOwnProperty.call(cloud,id) || local[id]>cloud[id]))result.deletedItems[field][id]=local[id];});
         });
         return result;
     };

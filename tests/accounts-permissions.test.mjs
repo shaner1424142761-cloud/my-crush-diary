@@ -40,3 +40,11 @@ test('explicit legacy recovery is idempotent, role-bound, and keeps messages uns
  assert.equal(twice.myScore,-2);assert.equal(twice.myHistory.length,1);assert.equal(twice.messages.length,2);
  assert.equal(twice.messages[1].authorId,undefined);assert.equal(twice.messages[1].importedBy,'yyf');
 });
+test('explicit shared recovery preserves local-only memories, wish changes and deletions',()=>{
+ const remote={...base(),wishes:[{id:'w',text:'trip',done:false,updatedAt:1},{id:'deleted',text:'remove',updatedAt:1}]};
+ const request={target:'my',history:[],messages:[],shared:{album:[{url:'https://example.com/photo',caption:'old',time:'old'}],blogPosts:[{title:'old',body:'old',time:'old'}],wishes:[{id:'w',text:'trip',done:true,updatedAt:2}],anniversaries:[{id:'a',title:'day',date:'2026-01-01'}],deletedItems:{wishes:{deleted:3},anniversaries:{}}}};
+ const merged=rules.mergeRecords(rules.mergeRecords(remote,{}),legacyImport(remote,request,'yyf'));
+ for(const field of ['album','blogPosts','anniversaries'])assert.equal(merged[field].length,1);
+ assert.equal(merged.wishes.length,1);assert.equal(merged.wishes[0].done,true);assert.equal(merged.deletedItems.wishes.deleted,3);
+ const twice=rules.mergeRecords(merged,legacyImport(merged,request,'yyf'));assert.deepEqual(twice,merged);
+});

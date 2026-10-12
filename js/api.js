@@ -101,7 +101,8 @@
         var pending=CD.inspectLegacyBackup(remote);
         var target=CD.auth.user.id==='yyf'?'my':'ta';
         var history=pending[target+'History'];
-        var total=pending.taHistory.length+pending.myHistory.length+pending.messages.length;
+        var sharedFields=['album','blogPosts','wishes','anniversaries'];
+        var total=pending.taHistory.length+pending.myHistory.length+pending.messages.length+sharedFields.reduce(function(n,field){return n+pending[field].length;},0)+Object.keys(pending.deletedItems.wishes).length+Object.keys(pending.deletedItems.anniversaries).length;
         var panel=document.getElementById('legacy-recovery');
         if(!total){if(panel)panel.hidden=true;return;}
         if(!panel){panel=document.createElement('section');panel.id='legacy-recovery';panel.className='legacy-recovery';document.body.appendChild(panel);}
@@ -111,17 +112,20 @@
         var selections=[];
         function row(item,type){
             var label=document.createElement('label'),box=document.createElement('input');box.type='checkbox';
-            label.appendChild(box);var text=document.createElement('span');text.textContent=' '+(item.time || '')+' · '+(type==='history'?(item.reason || '')+' ('+item.change+')':item.text);label.appendChild(text);label.style.display='block';panel.appendChild(label);selections.push({item:item,type:type,box:box});
+            label.appendChild(box);var text=document.createElement('span');text.textContent=' '+(item.time || '')+' · '+(type==='history'?(item.reason || '')+' ('+item.change+')':type==='message'?item.text:JSON.stringify(item));label.appendChild(text);label.style.display='block';panel.appendChild(label);selections.push({item:item,type:type,box:box});
         }
         history.forEach(function(item){row(item,'history');});pending.messages.forEach(function(item){row(item,'message');});
+        sharedFields.forEach(function(field){pending[field].forEach(function(item){row(item,field);});});
+        ['wishes','anniversaries'].forEach(function(field){Object.keys(pending.deletedItems[field]).forEach(function(id){row({section:field,id:id,time:pending.deletedItems[field][id]},'deletion');});});
         var button=document.createElement('button');button.textContent='恢复勾选内容';panel.appendChild(button);
         var status=document.createElement('p');status.setAttribute('role','status');panel.appendChild(status);
         button.addEventListener('click',async function(){
             if(CD.store.isSyncing || CD.auth.locked)return;
             var selected=selections.filter(function(x){return x.box.checked;});if(!selected.length){status.textContent='请先勾选需要恢复的内容。';return;}
+            var shared={deletedItems:{wishes:{},anniversaries:{}}};sharedFields.forEach(function(field){shared[field]=selected.filter(function(x){return x.type===field;}).map(function(x){return x.item;});});selected.filter(function(x){return x.type==='deletion';}).forEach(function(x){shared.deletedItems[x.item.section][x.item.id]=x.item.time;});
             var active=generation();button.disabled=true;CD.setStatus('正在恢复旧备份…','#ffaa33',true);
             try{
-                var response=await CD.authenticatedFetch('/legacy-import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({target:target,history:selected.filter(function(x){return x.type==='history';}).map(function(x){return x.item;}),messages:selected.filter(function(x){return x.type==='message';}).map(function(x){return x.item;})})});
+                var response=await CD.authenticatedFetch('/legacy-import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({target:target,shared:shared,history:selected.filter(function(x){return x.type==='history';}).map(function(x){return x.item;}),messages:selected.filter(function(x){return x.type==='message';}).map(function(x){return x.item;})})});
                 var data=await response.json();assertCurrent(active);if(!response.ok)throw new Error(data.message || '恢复失败');
                 CD.store.cloudData=CD.mergeRecords(CD.normalizeFetched(data.record),CD.store.cloudData);CD.saveLocalBackup(CD.store.cloudData);afterLoadRender(CD.store.onRender);CD.setStatus('旧备份已恢复，原备份仍保留','#32cd32',false);CD.showLegacyRecovery(data.record);
             }catch(error){if(active!==generation())return;status.textContent=error.message;CD.setStatus('恢复失败，原备份仍保留','red',false);}

@@ -25,3 +25,20 @@ test('a finished sync cannot re-enable controls belonging to the other account',
  vm.runInContext(fs.readFileSync(path.join(__dirname,'../js/ui/sync-bar.js'),'utf8'),context);
  CD.initSyncBar();CD.setStatus('saved','green',false);assert.equal(buttons[0].disabled,true);
 });
+test('legacy recovery exposes shared modules, completion changes and deletion markers',()=>{
+ const {CD,saved}=setup();
+ const legacy={album:[{url:'https://example.com/photo',caption:'old',time:'old'}],blogPosts:[{title:'old',body:'old',time:'old'}],wishes:[{id:'wish',text:'trip',done:true,updatedAt:2}],anniversaries:[{id:'anniv',title:'day',date:'2026-01-01',updatedAt:2}],deletedItems:{wishes:{removed:3},anniversaries:{gone:3}}};
+ saved.set(CD.STORAGE_KEY,JSON.stringify(legacy));
+ const result=CD.inspectLegacyBackup({wishes:[{id:'wish',text:'trip',done:false,updatedAt:1}]});
+ for(const field of ['album','blogPosts','wishes','anniversaries'])assert.equal(result[field].length,1);
+ assert.equal(result.deletedItems.wishes.removed,3);assert.equal(result.deletedItems.anniversaries.gone,3);
+ assert.equal(saved.get(CD.STORAGE_KEY),JSON.stringify(legacy));
+});
+test('a safe backup for the other account cannot clear an unsafe-buffer warning',()=>{
+ const saved=new Map(),warnings=[],CD={STORAGE_KEY:'old',auth:{user:null},updateBackupWarning:ok=>warnings.push(ok)};
+ const context=vm.createContext({window:{CrushDiary:CD},localStorage:{getItem:k=>saved.get(k),setItem(k,v){if(k.endsWith('yyf'))throw Error('quota');saved.set(k,v);}}});
+ vm.runInContext(fs.readFileSync(path.join(__dirname,'../js/store.js'),'utf8'),context);
+ CD.activateUser({id:'yyf'});CD.store.cloudData.messages.push({text:'unsafe'});CD.saveLocalBackup(CD.store.cloudData);
+ CD.suspendUser();CD.activateUser({id:'zxr'});CD.saveLocalBackup(CD.store.cloudData);
+ assert.equal(warnings.at(-1),false);
+});
