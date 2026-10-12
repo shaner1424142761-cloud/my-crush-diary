@@ -25,19 +25,20 @@ npx wrangler login
 
 编辑 `wrangler.jsonc` 中 `vars.JSONBIN_BIN_ID`，填**原有 Bin ID**。这不是新建数据库。`ALLOWED_ORIGINS` 保持 `https://shaner1424142761-cloud.github.io`，不要加 `/my-crush-diary/` 路径。
 
-三个秘密只通过终端的交互输入或 Cloudflare 控制台 Secret 设置；不要发到聊天，也不要写入公开 JS、Git 或普通环境变量：
+四个秘密只通过终端的交互输入或 Cloudflare 控制台 Secret 设置；不要发到聊天，也不要写入公开 JS、Git 或普通环境变量：
 
 ```powershell
 npx wrangler secret put JSONBIN_KEY
-npx wrangler secret put DIARY_PASSWORD
+npx wrangler secret put YYF_PASSWORD
+npx wrangler secret put ZXR_PASSWORD
 npx wrangler secret put SESSION_SECRET
 ```
 
 如果 Wrangler 提示项目不存在，允许创建名为 `our-crush-diary-api` 的 Worker。完整代码部署前不会读写记录。
 
 - `JSONBIN_KEY`：具有原 Bin 读写权限的密钥；优先使用只授权这个 Bin 的 Access Key，此时 `JSONBIN_KEY_HEADER` 改成 `X-Access-Key`。暂用 Master Key 时保留 `X-Master-Key`。
-- `DIARY_PASSWORD`：你们共同使用的强密码，至少 16 个字符，前端密码框最长 256 字符。只告诉对象。
-- `SESSION_SECRET`：另一个随机秘密，至少 32 字符，与共同密码不同。例如用 `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` 在本机生成，不要分享。
+- `YYF_PASSWORD` / `ZXR_PASSWORD`：两人各自的密码，各至少 16 字符，必须不同；前端输入框最长 256 字符。
+- `SESSION_SECRET`：另一个随机秘密，至少 32 字符，与两人的密码不同。例如用 `node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"` 在本机生成，不要分享。
 
 本地 `.dev.vars` 中的值是假的测试配置，不会作为正式部署的 Secret 上传。
 
@@ -60,7 +61,7 @@ npm run deploy:backend
 
 运行发布检查后，把修复分支合并到 GitHub Pages 当前使用的分支，等待 GitHub Pages 部署完成。网站地址保持不变。此步骤会更新线上网站，需确认后执行；不要上传 `node_modules`、`.dev.vars` 或备份目录。
 
-两人关闭所有旧标签页，重新打开网站，使用共同密码登录；默认登录只保存到当前浏览器会话，勾选“记住我”后保存 7 天。密码不会保存在浏览器存储中。不要在公共设备勾选记住我。退出会隐藏记录并移除令牌，保留本机备份。
+两人关闭所有旧标签页，重新打开网站，使用YYF/ZXR 双账号登录；默认登录只保存到当前浏览器会话，勾选“记住我”后保存 7 天。密码不会保存在浏览器存储中。不要在公共设备勾选记住我。退出会隐藏记录并移除令牌，保留本机备份。
 
 先只读核对历史，再进行双方认可的一次日常操作，两台设备刷新确认结果。失败时页面显示本机备份，不能把“已显示”当成“已上传”。点击刷新不会自动补传备份；需要再次保存操作或调用同步保存。
 
@@ -80,4 +81,8 @@ npm run deploy:backend
 
 上游不可用或数据异常时，后端不写云端；客户端先保存本机操作，再报告同步失败。不要清理网站数据，也不要用空对象“初始化”或恢复云端。暂时停用前端写入、核对完整备份与上游版本，解决问题后再恢复服务。不要回退到含旧密钥的公开前端。
 
-若需要强制全部设备重新登录，更新 `SESSION_SECRET`；只改共同密码不会撤销已经签发的 7 天令牌。
+若需要强制全部设备重新登录，更新 `SESSION_SECRET`；只改账号密码不会撤销已经签发的 7 天令牌。
+
+## 双账号迁移
+
+旧共同密码令牌会失效，须重新登录。YYF 对应给 ZXR 的 myHistory，ZXR 对应给 YYF 的 taHistory；后端也检查权限。新留言由签名身份署名，旧留言不补作者。每个账号有自己的本机备份与未同步缓冲；旧 v1 备份不会删除或自动上传，页面提供核对、勾选恢复。当前账号只能恢复对应方向的打分，另一个方向请切换账号；旧留言恢复后仍显示未标注作者。

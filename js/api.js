@@ -91,7 +91,7 @@
         } catch (e) {
             if (active !== generation() || e.superseded) return false;
             var backedUp = CD.saveLocalBackup(CD.store.cloudData);
-            CD.setStatus(backedUp === false ? '❌ 保存失败（仅保留在当前页面，请勿刷新或关闭）' : '❌ '+e.message+'（已写入本机备份）', 'red', false);
+            CD.setStatus(backedUp === false ? '❌ 保存失败（仅保留在当前页面，请勿刷新或关闭）' : '❌ 保存失败：'+e.message+'（已写入本机备份）', 'red', false);
         }
         afterLoadRender(CD.store.onRender);
         return saved;

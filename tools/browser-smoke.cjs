@@ -12,8 +12,9 @@ const server=http.createServer(async(req,res)=>{
   if(pathname.startsWith('/api/')) {
    res.setHeader('Content-Type','application/json');res.setHeader('Cache-Control','no-store');
    let body='';for await(const chunk of req)body+=chunk;
-   if(pathname==='/api/auth/login'){res.end(JSON.stringify({token:'mock-session',expiresAt:Math.floor(Date.now()/1000)+604800}));return;}
+   if(pathname==='/api/auth/login'){res.end(JSON.stringify({token:'mock-session',expiresAt:Math.floor(Date.now()/1000)+604800,user:{id:'zxr',name:'ZXR'}}));return;}
    if(reject || req.headers.authorization!=='Bearer mock-session'){res.writeHead(401);res.end('{}');return;}
+   if(pathname==='/api/auth/me'){res.end(JSON.stringify({user:{id:'zxr',name:'ZXR'}}));return;}
    if(offline){res.writeHead(503);res.end('{}');return;}
    if(req.method==='PUT'){puts++;cloud=tools.mergeRecords(cloud,JSON.parse(body));}else reads++;
    res.end(JSON.stringify({record:cloud}));return;
@@ -34,7 +35,7 @@ const server=http.createServer(async(req,res)=>{
   const url=`http://127.0.0.1:${server.address().port}`;
   await page.goto(url);await page.waitForSelector('#auth-panel');assert.equal(reads,0);
   assert.equal(await page.locator('.container').isVisible(),false);
-  await page.fill('#auth-password','mock-private-password');await page.click('#auth-submit');
+  await page.selectOption('#auth-username','zxr');await page.fill('#auth-password','mock-private-password');await page.click('#auth-submit');
   await page.waitForFunction(()=>window.CrushDiary.store.cloudData.taScore===13 && !window.CrushDiary.store.isSyncing);
   await page.click('#btn-ta-minus3');await page.waitForFunction(()=>document.getElementById('syncStatus').textContent.includes('已保存'));assert.equal(cloud.taScore,10);
   for(const file of ['album','blog','messages','wishes','anniversaries']){
@@ -44,14 +45,14 @@ const server=http.createServer(async(req,res)=>{
   page.once('dialog',dialog=>dialog.accept());await page.click('.wish-item__del');await page.waitForFunction(()=>document.getElementById('syncStatus').textContent.includes('已保存'));assert.equal(cloud.wishes.length,0);
   await page.goto(url+'/messages.html');await page.waitForFunction(()=>!window.CrushDiary.store.isSyncing);
   offline=true;await page.fill('#msg-input','模拟离线留言');await page.click('#btn-msg-send');await page.waitForFunction(()=>document.getElementById('syncStatus').textContent.includes('保存失败'));
-  assert.ok(await page.evaluate(()=>localStorage.getItem('myCrushDiary_backup_v1').includes('模拟离线留言')));
+  assert.ok(await page.evaluate(()=>localStorage.getItem('myCrushDiary_backup_v2_zxr').includes('模拟离线留言')));
   offline=false;await page.click('#btn-topbar-refresh');await page.waitForFunction(()=>!window.CrushDiary.store.isSyncing);
   await page.evaluate(()=>window.CrushDiary.saveDataToCloud());assert.ok(cloud.messages.some(item=>item.text==='模拟离线留言'));
   reject=true;await page.click('#btn-topbar-refresh');await page.waitForSelector('#auth-panel',{state:'visible'});assert.equal(await page.locator('.container').isVisible(),false);
-  reject=false;await page.fill('#auth-password','mock-private-password');await page.click('#auth-submit');await page.waitForFunction(()=>!window.CrushDiary.store.isSyncing);
+  reject=false;await page.selectOption('#auth-username','zxr');await page.fill('#auth-password','mock-private-password');await page.click('#auth-submit');await page.waitForFunction(()=>!window.CrushDiary.store.isSyncing);
   const before=puts;await page.evaluate(()=>window.CrushDiary.logout());assert.equal(puts,before);
-  assert.ok(await page.evaluate(()=>!!localStorage.getItem('myCrushDiary_backup_v1')));
-  await page.setViewportSize({width:390,height:844});await page.check('#auth-remember');await page.fill('#auth-password','mock-private-password');await page.click('#auth-submit');await page.waitForFunction(()=>!window.CrushDiary.store.isSyncing);
+  assert.ok(await page.evaluate(()=>!!localStorage.getItem('myCrushDiary_backup_v2_zxr')));
+  await page.setViewportSize({width:390,height:844});await page.check('#auth-remember');await page.selectOption('#auth-username','zxr');await page.fill('#auth-password','mock-private-password');await page.click('#auth-submit');await page.waitForFunction(()=>!window.CrushDiary.store.isSyncing);
   await page.reload();await page.waitForFunction(()=>!window.CrushDiary.store.isSyncing);assert.equal(await page.locator('#auth-panel').isVisible(),false);
   assert.deepEqual(errors,[]);console.log('Browser acceptance passed: six pages, deductions, deletion, offline recovery, expiry, logout, remembered mobile login.');
  }finally{await browser.close();server.close();}

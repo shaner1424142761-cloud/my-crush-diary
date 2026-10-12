@@ -1,6 +1,6 @@
 # YYF 和 ZXR 的恋爱日记
 
-保留原 GitHub Pages 地址和 JSONBin 记录，增加免费 Cloudflare Worker 后端与共同密码登录。
+保留原 GitHub Pages 地址和 JSONBin 记录，增加免费 Cloudflare Worker 后端与YYF/ZXR 双账号登录。
 
 - 删除标记阻止旧缓存恢复已删愿望和纪念日。
 - 分数由去重后的历史计算，保留迁移前的历史差额，扣分不会被旧分数覆盖。
@@ -31,6 +31,8 @@ npm run check:backend
 
 ## 本地模拟调试
 
-运行 `npm run dev:local`（这台电脑也可直接运行 `node tools/local-preview.cjs`），打开 `http://127.0.0.1:8765`。共同密码填写 `local-demo-password-123`。页面有明确的本地模拟提示，使用实际 Worker/SQLite 运行环境，所有 JSONBin 请求均被本地模拟适配器处理，完全不接触真实记录。每次启动是新的模拟数据；这些测试内容不会上线。按 Ctrl+C 停止。
+运行 `npm run dev:local`（这台电脑也可直接运行 `node tools/local-preview.cjs`），打开 `http://127.0.0.1:8765`。YYF 测试密码为 `local-yyf-password-123`，ZXR 为 `local-zxr-password-123`。页面有明确的本地模拟提示，使用实际 Worker/SQLite 运行环境，所有 JSONBin 请求均被本地模拟适配器处理，完全不接触真实记录。每次启动是新的模拟数据；这些测试内容不会上线。按 Ctrl+C 停止。
 
 完整运行环境验收：`npm run test:runtime`，需要 Chrome 和 Playwright；可用 `PLAYWRIGHT_MODULE` 指定本机已有 Playwright。生产配置不受本地预览影响。
+
+YYF 只能给 ZXR 打分，ZXR 只能给 YYF 打分。新悄悄话显示真实作者，旧留言保持未署名。未同步备份按账号隔离，旧 v1 备份始终保留，可在核对面板勾选恢复。

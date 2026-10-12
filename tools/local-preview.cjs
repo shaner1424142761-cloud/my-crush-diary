@@ -1,12 +1,12 @@
 const http=require('node:http'),fs=require('node:fs'),path=require('node:path'),{spawn}=require('node:child_process');
 const root=path.resolve(__dirname,'..');
-const password='local-demo-password-123';
+const passwords={yyf:'local-yyf-password-123',zxr:'local-zxr-password-123'};
 async function startPreview({port=8765,backendPort=8877,quiet=false}={}){
  const state=path.join(root,'.wrangler','local-demo-'+Date.now());fs.mkdirSync(state,{recursive:true});
  const api='http://127.0.0.1:'+backendPort,website='http://127.0.0.1:'+port;
  const config=path.join(state,'wrangler.json');
  fs.writeFileSync(config,JSON.stringify({name:'diary-local-demo',main:path.join(root,'tests/fixtures/local-worker.mjs').replace(/\\/g,'/'),compatibility_date:'2026-10-11',workers_dev:false,
-  vars:{DIARY_PASSWORD:password,SESSION_SECRET:'local-demo-secret-12345678901234567890',JSONBIN_KEY:'fake-key-local-only',JSONBIN_BIN_ID:'a'.repeat(24),ALLOWED_ORIGINS:website},
+  vars:{YYF_PASSWORD:passwords.yyf,ZXR_PASSWORD:passwords.zxr,SESSION_SECRET:'local-demo-secret-12345678901234567890',JSONBIN_KEY:'fake-key-local-only',JSONBIN_BIN_ID:'a'.repeat(24),ALLOWED_ORIGINS:website},
   durable_objects:{bindings:[{name:'DIARY_STORE',class_name:'DiaryObject'}]},migrations:[{tag:'v1',new_sqlite_classes:['DiaryObject']}]}));
  const child=spawn(process.execPath,[path.join(root,'node_modules/wrangler/bin/wrangler.js'),'dev','--config',config,'--local','--ip','127.0.0.1','--port',String(backendPort),'--persist-to',path.join(state,'storage')],{cwd:root,stdio:['ignore','pipe','pipe'],env:{...process.env,WRANGLER_SEND_METRICS:'false'}});
  let output='';child.stdout.on('data',chunk=>output=(output+chunk).slice(-5000));child.stderr.on('data',chunk=>output=(output+chunk).slice(-5000));
@@ -33,8 +33,8 @@ async function startPreview({port=8765,backendPort=8877,quiet=false}={}){
    await new Promise(resolve=>setTimeout(resolve,200));
   }
   if(!ready)throw new Error('Local Worker did not become ready: '+output);
-  if(!quiet)console.log('本地模拟预览：'+website+'\n测试密码：'+password+'\n真实记录不会被读取或修改。按 Ctrl+C 停止。');
-  return {website,api,password,stop};
+  if(!quiet)console.log('本地模拟预览：'+website+'\nYYF 测试密码：'+passwords.yyf+'\nZXR 测试密码：'+passwords.zxr+'\n真实记录不会被读取或修改。按 Ctrl+C 停止。');
+  return {website,api,passwords,stop};
  }catch(error){stop();throw error;}
 }
 module.exports={startPreview};

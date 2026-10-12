@@ -19,3 +19,9 @@ test('legacy backup is kept for explicit inspection and is never assigned to an 
  const pending=CD.inspectLegacyBackup({taHistory:legacy.taHistory,messages:[]});
  assert.equal(pending.taHistory.length,0);assert.equal(pending.messages.length,1);
 });
+test('a finished sync cannot re-enable controls belonging to the other account',()=>{
+ const buttons=[{disabled:false}],CD={auth:{locked:false,user:{id:'yyf'}},store:{},updateScoreControls(){buttons[0].disabled=true;}};
+ const context=vm.createContext({window:{CrushDiary:CD},document:{getElementById:()=>({style:{}}),querySelectorAll:()=>buttons}});
+ vm.runInContext(fs.readFileSync(path.join(__dirname,'../js/ui/sync-bar.js'),'utf8'),context);
+ CD.initSyncBar();CD.setStatus('saved','green',false);assert.equal(buttons[0].disabled,true);
+});

@@ -21,5 +21,6 @@
         actionButtons.forEach(function (btn) {
             btn.disabled = disabled;
         });
+        if (CD.updateScoreControls) CD.updateScoreControls();
     };
 })(window.CrushDiary);

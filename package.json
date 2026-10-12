@@ -12,7 +12,8 @@
     "deploy:backend": "wrangler deploy",
     "check:public": "node tools/verify-public-files.cjs",
     "dev:local": "node tools/local-preview.cjs",
-    "test:runtime": "node tools/runtime-smoke.cjs"
+    "test:runtime": "node tools/runtime-smoke.cjs",
+    "test:accounts": "node tools/accounts-runtime-smoke.cjs"
   },
   "devDependencies": {
     "wrangler": "^4.149.0"
