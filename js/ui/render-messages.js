@@ -1,4 +1,5 @@
 (function (CD) {
+    CD.messageAuthor=function(msg){return msg.authorId==='yyf'?'YYF':msg.authorId==='zxr'?'ZXR':'历史留言 · 未标注作者';};
     CD.renderMessages = function () {
         if (CD.updateLoveCalendar) CD.updateLoveCalendar();
 
@@ -32,6 +33,7 @@
                 var time = document.createElement('div');
                 time.className = 'msg-time';
                 time.textContent = msg.time || '';
+                var author=document.createElement('div');author.className='msg-author';author.textContent=CD.messageAuthor(msg);div.appendChild(author);
                 div.appendChild(t);
                 div.appendChild(time);
                 msgListEl.appendChild(div);

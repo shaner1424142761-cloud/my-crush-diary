@@ -83,6 +83,10 @@
     var logout = document.createElement('button');
     logout.type = 'button'; logout.className = 'side-menu__link'; logout.textContent = '退出登录';
     logout.addEventListener('click', function () { closeMenu(); window.CrushDiary.logout(); });
+    var identity=document.createElement('p');identity.className='side-menu__identity';nav.appendChild(identity);
+    function identityChanged(){identity.textContent=window.CrushDiary.auth.user?'当前账号：'+window.CrushDiary.auth.user.name:'';}
+    window.CrushDiary.onAuthChange(identityChanged);identityChanged();
+    logout.textContent='退出 / 切换账号';
     nav.appendChild(logout);
     panel.appendChild(header);
     panel.appendChild(nav);

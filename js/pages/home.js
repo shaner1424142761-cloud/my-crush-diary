@@ -4,9 +4,10 @@
     CD.updateLoveCalendar();
 
     async function updateScore(target, change, reason) {
-        if (CD.store.isSyncing) return;
+        if (CD.store.isSyncing || !CD.canScore(target)) return;
         var newRecord = {
             id: CD.newHistoryItemId(),
+            authorId:CD.auth.user.id,
             change: change,
             reason: reason,
             time: CD.getTimeString()

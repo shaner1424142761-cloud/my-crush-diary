@@ -34,9 +34,21 @@
         });
     }
 
+    CD.canScore=function(target){return CD.auth && !CD.auth.locked && CD.auth.user && target===(CD.auth.user.id==='yyf'?'my':'ta');};
+    CD.updateScoreControls=function(){
+        ['ta','my'].forEach(function(target){
+            ['btn-record-','btn-'+target+'-plus5','btn-'+target+'-plus2','btn-'+target+'-minus3','reason-','input-score-'].forEach(function(id){
+                if(id.endsWith('-'))id+=target;
+                var el=document.getElementById(id);if(el)el.disabled=CD.store.isSyncing || !CD.canScore(target);
+            });
+            var note=document.getElementById('permission-'+target);if(note)note.textContent=CD.canScore(target)?'由你为对方打分':'由 '+(target==='ta'?'ZXR':'YYF')+' 为对方打分';
+        });
+    };
+    if(CD.onAuthChange)CD.onAuthChange(CD.updateScoreControls);
     CD.renderHome = function () {
         if (CD.updateLoveCalendar) CD.updateLoveCalendar();
 
+        CD.updateScoreControls();
         var cloudData = CD.store.cloudData;
 
         var scoreTa = document.getElementById('score-ta');

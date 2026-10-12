@@ -4,7 +4,7 @@
     CD.updateLoveCalendar();
 
     async function addMessage() {
-        if (CD.store.isSyncing) return;
+        if (CD.store.isSyncing || !CD.auth || CD.auth.locked || !CD.auth.user) return;
         var msgInput = document.getElementById('msg-input');
         var text = msgInput.value.trim();
         if (!text) {
@@ -12,7 +12,7 @@
             return;
         }
         if (!CD.store.cloudData.messages) CD.store.cloudData.messages = [];
-        CD.store.cloudData.messages.push({ text: text, time: CD.getTimeString() });
+        CD.store.cloudData.messages.push({ id:CD.newHistoryItemId(),authorId:CD.auth.user.id,text: text, time: CD.getTimeString() });
         msgInput.value = '';
         CD.renderMessages();
         await CD.saveDataToCloud();
@@ -25,7 +25,7 @@
         }
         var textContent = '💖 我们的专属留言板记录 💖\n=================================\n\n';
         CD.store.cloudData.messages.forEach(function (msg) {
-            textContent += '[' + msg.time + '] ' + msg.text + '\n';
+            textContent += '[' + msg.time + '] ['+CD.messageAuthor(msg)+'] ' + msg.text + '\n';
         });
         textContent += '\n=================================\n导出于：' + CD.getTimeString();
 
