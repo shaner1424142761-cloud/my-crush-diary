@@ -22,5 +22,6 @@
             btn.disabled = disabled;
         });
         if (CD.updateScoreControls) CD.updateScoreControls();
+        if (CD.updateAlbumControls) CD.updateAlbumControls();
     };
 })(window.CrushDiary);

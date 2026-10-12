@@ -11,7 +11,7 @@
     <link rel="stylesheet" href="css/footer.css">
     <link rel="stylesheet" href="css/auth.css">
 </head>
-<body class="auth-locked">
+<body class="auth-locked page-album">
     <header class="app-topbar" role="banner">
         <div class="app-topbar__inner">
             <span id="side-menu-toggle-host" class="app-topbar__menu-host"></span>
@@ -37,17 +37,29 @@
         <main>
             <div class="panel panel-album">
                 <h2>📷 回忆相册</h2>
-                <p class="framework-hint">可粘贴公开图床/相册链接展示；后续也能改成上传到你自己的存储。</p>
+                <p class="album-intro">把一起度过的小日子，留在这里。</p>
+                <div class="photo-upload">
+                    <label class="photo-picker" for="album-files">选择照片<input type="file" id="album-files" accept="image/jpeg,image/png,image/webp" multiple></label>
+                    <p class="photo-upload-hint">一次最多 9 张 · 自动压缩为展示照片，请另存原图</p>
+                    <div id="album-upload-queue"></div>
+                    <button type="button" class="btn-album" id="btn-upload-photos">上传 / 重试这批照片</button>
+                    <p id="album-upload-status" role="status" aria-live="polite"></p><p id="album-usage">照片容量上限 200 MiB</p>
+                </div>
                 <div class="album-grid" id="album-grid"></div>
-                <div class="album-form">
+                <details class="album-link-details"><summary>通过图片链接加入（原方式）</summary><div class="album-form">
                     <input type="url" id="album-url" placeholder="图片链接（https://...）" autocomplete="off">
                     <input type="text" id="album-caption" placeholder="一句话备注（可选）" maxlength="40">
                     <button type="button" class="btn-album" id="btn-add-album">加入相册</button>
-                </div>
+                </div></details>
             </div>
         </main>
     </div>
 
+    <dialog id="album-lightbox" aria-label="回忆照片大图">
+        <button type="button" id="album-lightbox-close" class="lightbox-close" aria-label="关闭大图">×</button>
+        <div class="lightbox-stage"><button type="button" id="album-lightbox-prev" aria-label="上一张">‹</button><img id="album-lightbox-img" alt="回忆"><button type="button" id="album-lightbox-next" aria-label="下一张">›</button></div>
+        <p id="album-lightbox-caption"></p><p id="album-lightbox-time"></p><p id="album-lightbox-status" role="status"></p>
+    </dialog>
     <script src="js/config.js"></script>
     <script src="js/constants.js"></script>
     <script src="js/store.js"></script>
@@ -60,6 +72,7 @@
     <script src="js/ui/topbar-actions.js"></script>
     <script src="js/util/time.js"></script>
     <script src="js/ui/love-calendar.js"></script>
+    <script src="js/photos.js"></script>
     <script src="js/ui/render-album.js"></script>
     <script src="js/api.js"></script>
     <script src="js/pages/album.js"></script>

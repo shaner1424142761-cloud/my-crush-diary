@@ -7,8 +7,8 @@
     async function bounded(mark,operation){
         current(mark);var controller=new AbortController();controllers.add(controller);
         var rejectAbort;var aborted=new Promise(function(_,reject){rejectAbort=reject;});
-        var cancel=function(){rejectAbort(stale());};controller.signal.addEventListener('abort',cancel,{once:true});
-        var timer=setTimeout(function(){controller.abort();},20000);
+        var cancel=function(){rejectAbort(controller.signal.reason || stale());};controller.signal.addEventListener('abort',cancel,{once:true});
+        var timer=setTimeout(function(){controller.abort(new Error('照片请求超时，请重试。'));},20000);
         try{var result=await Promise.race([operation(controller.signal),aborted]);current(mark);return result;}
         finally{clearTimeout(timer);controller.signal.removeEventListener('abort',cancel);controllers.delete(controller);}
     }
@@ -76,7 +76,7 @@
         var job={id:id,mark:stamp()};job.promise=new Promise(function(resolve,reject){job.resolve=resolve;job.reject=reject;});pending.set(id,job.promise);queue.push(job);pump();return job.promise;
     };
     CD.clearPhotoCache=function(){
-        epoch++;controllers.forEach(function(controller){controller.abort();});controllers.clear();
+        epoch++;controllers.forEach(function(controller){controller.abort(stale());});controllers.clear();
         queue.forEach(function(job){job.reject(stale());});queue=[];active=0;pending.clear();cache.forEach(function(url){URL.revokeObjectURL(url);});cache.clear();
     };
     var lastGeneration=CD.auth.generation,lastLocked=CD.auth.locked;
