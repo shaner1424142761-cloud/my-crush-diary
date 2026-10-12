@@ -9,7 +9,8 @@
     "test": "node --test tests/*.test.cjs tests/*.test.mjs",
     "dev:backend": "wrangler dev --local",
     "check:backend": "wrangler deploy --dry-run",
-    "deploy:backend": "wrangler deploy"
+    "deploy:backend": "wrangler deploy",
+    "check:public": "node tools/verify-public-files.cjs"
   },
   "devDependencies": {
     "wrangler": "^4.149.0"
