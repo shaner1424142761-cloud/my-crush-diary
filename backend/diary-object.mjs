@@ -25,8 +25,8 @@ export class DiaryObject {
         if(!rate || rate.expiresAt<=now)rate={count:0,expiresAt:now+900000};
         if(rate.count>=5)throw new HttpError(429,'尝试次数较多，请 15 分钟后再试。');
         await storage.put(key,{...rate,count:rate.count+1});
-        if(!await passwordMatches(body.password,this.env))throw new HttpError(401,'密码不正确。');
-        return json(await issueToken(this.env));
+        if(!await passwordMatches(body.password,this.env,body.username))throw new HttpError(401,'账号或密码不正确。');
+        return json(await issueToken(this.env,body.username));
     }
     async upstream(method,record) {
         const controller=new AbortController();const timer=setTimeout(()=>controller.abort(),10000);

@@ -1,4 +1,4 @@
-import {configured,verifyToken} from './auth.mjs';
+import {configured,verifyToken,readSession} from './auth.mjs';
 import {json} from './http.mjs';
 export {DiaryObject} from './diary-object.mjs';
 export default {
@@ -22,9 +22,15 @@ export default {
         }
         const path=new URL(request.url).pathname;
         if(path==='/health' && request.method==='GET')return respond(json({configured:configured(env)}));
-        if(!['/diary','/auth/login'].includes(path))return respond(json({message:'找不到此接口。'},404));
+        if(!['/diary','/auth/login','/auth/me'].includes(path))return respond(json({message:'找不到此接口。'},404));
         if(!configured(env))return respond(json({message:'后端尚未配置完成。'},503));
         if(path==='/auth/login' && request.method!=='POST')return respond(json({message:'不支持此操作。'},405));
+        if(path==='/auth/me'){
+            if(request.method!=='GET')return respond(json({message:'不支持此操作。'},405));
+            const auth=request.headers.get('Authorization') || '';
+            const user=auth.startsWith('Bearer ')?await readSession(auth.slice(7),env):null;
+            return respond(user?json({user}):json({message:'请重新登录。'},401));
+        }
         if(path==='/diary'){
             const auth=request.headers.get('Authorization') || '';
             if(!auth.startsWith('Bearer ') || !await verifyToken(auth.slice(7),env))return respond(json({message:'请重新登录。'},401));

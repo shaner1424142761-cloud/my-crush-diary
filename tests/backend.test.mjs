@@ -8,7 +8,7 @@ const base=()=>({taScore:13,taHistory:[{id:'first',change:10,time:'10-01'}],mySc
 function harness() {
  const storage=new Map();
  let cloud=base(), calls=[], failRead=false, failWrite=false, loseReply=false;
- const env={DIARY_PASSWORD:'test-password-123456',SESSION_SECRET:'test-secret-'.repeat(4),JSONBIN_KEY:'fake-key-never-real',JSONBIN_BIN_ID:'a'.repeat(24),ALLOWED_ORIGINS:origin};
+ const env={YYF_PASSWORD:'test-password-123456',ZXR_PASSWORD:'other-password-123456',SESSION_SECRET:'test-secret-'.repeat(4),JSONBIN_KEY:'fake-key-never-real',JSONBIN_BIN_ID:'a'.repeat(24),ALLOWED_ORIGINS:origin};
  let queue=Promise.resolve();
  const ctx={storage:{
   get:async key=>structuredClone(storage.get(key)),
@@ -39,14 +39,14 @@ function harness() {
  return {env,storage,calls,request,get cloud(){return cloud;},set cloud(value){cloud=value;},set failRead(v){failRead=v;},set failWrite(v){failWrite=v;},set loseReply(v){loseReply=v;},restart(){object=new DiaryObject(ctx,env,fetcher);}};
 }
 test('signed sessions expire after seven days and reject tampering',async()=>{
- const h=harness();const {token,expiresAt}=await issueToken(h.env,100);
+ const h=harness();const {token,expiresAt}=await issueToken(h.env,'zxr',100);
  assert.equal(expiresAt,604900);
  assert.equal(await verifyToken(token,h.env,100),true);
  assert.equal(await verifyToken(token,h.env,expiresAt),false);
  assert.equal(await verifyToken(token+'x',h.env,100),false);
 });
 test('invalid authentication never accesses the cloud',async()=>{
- const h=harness();const expired=await issueToken(h.env,1);
+ const h=harness();const expired=await issueToken(h.env,'zxr',1);
  for(const token of [undefined,'broken','x'.repeat(3000),expired.token]){
   assert.equal((await h.request('/diary','GET',undefined,token)).status,401);
  }
@@ -56,21 +56,21 @@ test('health and error responses contain no secrets or memories',async()=>{
  const h=harness();const response=await h.request('/health');
  assert.deepEqual(await response.json(),{configured:true});
  assert.equal(response.headers.get('Cache-Control'),'no-store');
- const denied=await h.request('/auth/login','POST',{password:'bad'});
+ const denied=await h.request('/auth/login','POST',{username:'zxr',password:'bad'});
  assert.equal(denied.status,401);
  assert.equal((await denied.text()).includes(h.env.JSONBIN_KEY),false);
  assert.equal(h.calls.length,0);
 });
 test('login rate limits persist when a Durable Object is reconstructed',async()=>{
  const h=harness();
- for(let i=0;i<5;i++)assert.equal((await h.request('/auth/login','POST',{password:'bad'})).status,401);
+ for(let i=0;i<5;i++)assert.equal((await h.request('/auth/login','POST',{username:'zxr',password:'bad'})).status,401);
  h.restart();
- assert.equal((await h.request('/auth/login','POST',{password:h.env.DIARY_PASSWORD})).status,429);
+ assert.equal((await h.request('/auth/login','POST',{username:'zxr',password:h.env.ZXR_PASSWORD})).status,429);
  for(const [key,value]of h.storage)if(key.startsWith('rate:'))h.storage.set(key,{...value,expiresAt:0});
- assert.equal((await h.request('/auth/login','POST',{password:h.env.DIARY_PASSWORD})).status,200);
+ assert.equal((await h.request('/auth/login','POST',{username:'zxr',password:h.env.ZXR_PASSWORD})).status,200);
 });
 test('GET is read-only and two overlapping writes keep both changes',async()=>{
- const h=harness();const {token}=await issueToken(h.env);
+ const h=harness();const {token}=await issueToken(h.env,'zxr');
  assert.equal((await h.request('/diary','GET',undefined,token)).status,200);
  assert.equal(h.calls.filter(c=>c.method==='PUT').length,0);
  const a=base(),b=base();
@@ -84,7 +84,7 @@ test('GET is read-only and two overlapping writes keep both changes',async()=>{
  assert.deepEqual(h.cloud.futureSection,{note:'keep'});
 });
 test('cloud failures do not overwrite data and successful writes keep only three backups',async()=>{
- const h=harness();const {token}=await issueToken(h.env);
+ const h=harness();const {token}=await issueToken(h.env,'zxr');
  h.failRead=true;
  assert.equal((await h.request('/diary','PUT',base(),token)).status,502);
  assert.equal(h.calls.filter(c=>c.method==='PUT').length,0);
@@ -96,7 +96,7 @@ test('cloud failures do not overwrite data and successful writes keep only three
  assert.equal(h.storage.get('snapshots').length,3);
 });
 test('a lost PUT reply is safely retried without duplicating scores',async()=>{
- const h=harness();const {token}=await issueToken(h.env);const data=base();
+ const h=harness();const {token}=await issueToken(h.env,'zxr');const data=base();
  data.taHistory.push({id:'minus',change:-3,time:'10-02'});data.taScore=10;
  h.loseReply=true;
  assert.equal((await h.request('/diary','PUT',data,token)).status,502);
@@ -104,7 +104,7 @@ test('a lost PUT reply is safely retried without duplicating scores',async()=>{
  assert.equal(h.cloud.taScore,10);assert.equal(h.cloud.taHistory.length,2);
 });
 test('CORS, malformed records and large requests fail without modifying records',async()=>{
- const h=harness();const {token}=await issueToken(h.env);
+ const h=harness();const {token}=await issueToken(h.env,'zxr');
  const preflight=await h.request('/diary','OPTIONS');
  assert.equal(preflight.status,204);assert.equal(preflight.headers.get('Access-Control-Allow-Origin'),origin);
  const forbidden=await worker.fetch(new Request('https://test.invalid/diary',{headers:{Origin:'https://evil.invalid',Authorization:'Bearer '+token}}),h.env);
@@ -116,7 +116,7 @@ test('CORS, malformed records and large requests fail without modifying records'
  assert.equal(h.calls.length,0);
 });
 test('malformed cloud data produces an upstream failure and never writes',async()=>{
- const h=harness();const {token}=await issueToken(h.env);
+ const h=harness();const {token}=await issueToken(h.env,'zxr');
  h.cloud={messages:'broken'};
  assert.equal((await h.request('/diary','PUT',base(),token)).status,502);
  assert.equal(h.calls.filter(c=>c.method==='PUT').length,0);
@@ -124,6 +124,6 @@ test('malformed cloud data produces an upstream failure and never writes',async(
 test('distributed login attempts cannot grow persistent rate storage past its bound',async()=>{
  const h=harness();
  for(let i=0;i<512;i++)h.storage.set('rate:old'+i,{count:1,expiresAt:Date.now()+900000});
- assert.equal((await h.request('/auth/login','POST',{password:'bad'})).status,429);
+ assert.equal((await h.request('/auth/login','POST',{username:'zxr',password:'bad'})).status,429);
  assert.equal([...h.storage.keys()].filter(k=>k.startsWith('rate:')).length,512);
 });
