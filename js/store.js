@@ -25,6 +25,7 @@
         CD.store.cloudData=CD.loadLocalBackup() || CD.defaultCloudData();
     };
     CD.suspendUser=function(){
+        if(suspended)return;
         if(activeId)CD.saveLocalBackup(CD.store.cloudData);
         CD.store.cloudData=CD.defaultCloudData();suspended=true;
         // Keep activeId and buffers so re-login to the same account can restore memory.

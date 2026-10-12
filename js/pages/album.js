@@ -6,7 +6,7 @@
     function status(text){var el=document.getElementById('album-upload-status');if(el)el.textContent=text;}
     function check(generation,id){if(CD.auth.locked || CD.auth.generation!==generation || userId()!==id){var error=new Error('账号已改变');error.superseded=true;throw error;}}
     CD.updateAlbumControls=function(){
-        var disabled=running || CD.store.isSyncing || !!(CD.auth && CD.auth.locked);
+        var disabled=running || currentQueue().some(function(item){return !!item.preparing;}) || CD.store.isSyncing || !!(CD.auth && CD.auth.locked);
         ['album-files','btn-upload-photos','btn-add-album'].forEach(function(id){var el=document.getElementById(id);if(el)el.disabled=disabled;});
     };
     function renderQueue(){
@@ -24,6 +24,22 @@
             row.appendChild(img);row.appendChild(detail);list.appendChild(row);
         });CD.updateAlbumControls();
     }
+    function prepareSelection(queue,generation,id){
+        var chain=Promise.resolve();
+        queue.forEach(function(item){
+            if(item.prepared || item.preparing || item.stage==='完成' || item.stage==='失败')return;
+            item.stage='正在准备预览';
+            item.preparing=chain.then(async function(){
+                check(generation,id);if(queues[id]!==queue || queue.indexOf(item)<0)return;
+                var prepared=await CD.preparePhoto(item.file);check(generation,id);
+                if(queues[id]!==queue || queue.indexOf(item)<0)return;
+                item.prepared=prepared;item.stage='等待上传';item.error='';
+            }).catch(function(error){item.stage=error.superseded?'等待处理':'失败';item.error=error.superseded?'':error.message;}).finally(function(){
+                item.preparing=null;
+                if(generation===CD.auth.generation && id===userId() && !CD.auth.locked){renderQueue();if(!running && !queue.some(function(x){return !!x.preparing;}))status('预览准备完成，可填写说明后上传；失败的照片可移出或重试。');}
+            });chain=item.preparing;
+        });renderQueue();
+    }
     CD.selectAlbumFiles=function(files){
         if(running || CD.store.isSyncing || !userId() || CD.auth.locked)return false;
         files=Array.prototype.slice.call(files || []);
@@ -32,7 +48,7 @@
         if(old.some(function(item){return item.stage!=='完成';})){status('请先重试当前队列，完成后再选择下一批。');return false;}
         old.forEach(function(item){if(item.preview)URL.revokeObjectURL(item.preview);});
         queues[userId()]=files.map(function(file){return {file:file,id:CD.newHistoryItemId(),time:new Date().toISOString(),caption:'',stage:'等待处理',uploaded:false,appended:false};});
-        status(files.length?'已选择 '+files.length+' 张。上传前会压缩为展示照片。':'');renderQueue();return true;
+        status(files.length?'已选择 '+files.length+' 张，正在准备预览…':'');prepareSelection(currentQueue(),CD.auth.generation,userId());return true;
     };
     CD.uploadAlbumQueue=async function(){
         if(running || CD.store.isSyncing || !userId() || CD.auth.locked)return false;
@@ -42,6 +58,7 @@
             for(var item of queue){
                 check(generation,id);if(item.stage==='完成')continue;item.error='';item.captionFixed=true;
                 try{
+                    if(item.preparing){await item.preparing;check(generation,id);}
                     if(!item.prepared){item.stage='处理中';renderQueue();item.prepared=await CD.preparePhoto(item.file);check(generation,id);}
                     if(!item.uploaded){item.stage='上传中';renderQueue();var usage=await CD.uploadPhoto(item.prepared);check(generation,id);item.uploaded=true;var capacity=document.getElementById('album-usage');if(capacity)capacity.textContent='照片容量：'+(usage.usedBytes/1024/1024).toFixed(1)+' / 200 MiB';}
                     item.stage='待同步';
@@ -64,7 +81,7 @@
     if(upload)upload.addEventListener('click',function(){CD.uploadAlbumQueue();});
     if(CD.onAuthChange)CD.onAuthChange(function(){
         var id=userId();if(id!==lastUser || CD.auth.generation!==lastGeneration || CD.auth.locked){running=false;Object.keys(queues).forEach(function(name){queues[name].forEach(function(item){if(item.preview)URL.revokeObjectURL(item.preview);item.preview=null;});});lastUser=id;lastGeneration=CD.auth.generation;}
-        if(CD.auth.locked){var list=document.getElementById('album-upload-queue');if(list)list.innerHTML='';status('');}else renderQueue();CD.updateAlbumControls();
+        if(CD.auth.locked){var list=document.getElementById('album-upload-queue');if(list)list.innerHTML='';status('');}else {renderQueue();prepareSelection(currentQueue(),CD.auth.generation,id);}CD.updateAlbumControls();
     });
     document.getElementById('btn-add-album').addEventListener('click',async function(){
         if(CD.store.isSyncing || running)return;

@@ -42,3 +42,8 @@ test('a safe backup for the other account cannot clear an unsafe-buffer warning'
  CD.suspendUser();CD.activateUser({id:'zxr'});CD.saveLocalBackup(CD.store.cloudData);
  assert.equal(warnings.at(-1),false);
 });
+for(const blocked of [false,true])test('repeated expiry/logout suspension cannot overwrite pending backups '+blocked,()=>{
+ const {CD}=setup(blocked);CD.activateUser({id:'yyf'});CD.store.cloudData.messages.push({id:'pending',authorId:'yyf',text:'keep'});
+ CD.suspendUser();CD.suspendUser();CD.suspendUser();CD.activateUser({id:'yyf'});
+ assert.equal(CD.store.cloudData.messages.length,1);assert.equal(CD.store.cloudData.messages[0].id,'pending');
+});

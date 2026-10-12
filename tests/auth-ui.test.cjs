@@ -134,3 +134,10 @@ test('switching accounts preserves blocked-storage pending buffers and isolates 
  env.cd.logout();await env.cd.login('yyf','password',false);
  assert.equal(env.cd.store.cloudData.messages.length,1);assert.equal(env.cd.store.cloudData.messages[0].text,'pending-only');
 });
+for(const blockedStorage of [false,true])test('multiple expired fetches and logout preserve the pending account buffer '+blockedStorage,async()=>{
+ const env=setup({blockedStorage});await env.cd.login('yyf','private-password',false);integrate(env);env.cd.store.cloudData=record();
+ const future=Date.now()+8*86400000;env.ctx.Date=class extends Date{static now(){return future;}};
+ const results=await Promise.allSettled([env.cd.authenticatedFetch('/diary'),env.cd.authenticatedFetch('/diary')]);
+ assert.ok(results.every(r=>r.status==='rejected'));env.cd.logout();env.cd.logout();env.ctx.Date=Date;
+ await env.cd.login('yyf','private-password',false);assert.equal(env.cd.store.cloudData.messages[0]?.text,'pending-only');
+});

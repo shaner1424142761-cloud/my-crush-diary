@@ -34,7 +34,8 @@ test('quota is atomic across concurrent uploads and storage failure rolls back b
  const h=await setup(),a=jpeg(1),b=jpeg(2),idA=await hash(a),idB=await hash(b);
  h.stored.set('usedBytes',PHOTO_LIMIT-a.length);
  const responses=await Promise.all([h.call('/photos/'+idA,'PUT',a),h.call('/photos/'+idB,'PUT',b)]);
- assert.deepEqual(responses.map(r=>r.status),[200,409]);assert.equal(h.stored.get('usedBytes'),PHOTO_LIMIT);
- assert.equal((await h.call('/photos/'+idA)).status,200);
+ assert.deepEqual(responses.map(r=>r.status).sort((a,b)=>a-b),[200,409]);assert.equal(h.stored.get('usedBytes'),PHOTO_LIMIT);
+ const winner=responses[0].status===200?idA:idB,loser=winner===idA?idB:idA;
+ assert.equal((await h.call('/photos/'+winner)).status,200);assert.equal((await h.call('/photos/'+loser)).status,404);
  const broken=await setup();broken.fail=true;assert.equal((await broken.call('/photos/'+idA,'PUT',a)).status,503);assert.equal(broken.stored.size,0);
 });

@@ -21,10 +21,14 @@ const sha=async bytes=>Buffer.from(await crypto.subtle.digest('SHA-256',bytes)).
    }return result;
   });
   const payloads=generated.map((base64,n)=>({name:'synthetic-'+n+'.png',mimeType:'image/png',buffer:Buffer.from(base64,'base64')}));
-  await pages[0].setInputFiles('#album-files',[...payloads,{name:'bad.png',mimeType:'image/png',buffer:Buffer.from('invalid')}]);await pages[0].click('#btn-upload-photos');
+  await pages[0].setInputFiles('#album-files',[...payloads,{name:'bad.png',mimeType:'image/png',buffer:Buffer.from('invalid')}]);
+  await pages[0].waitForFunction(()=>!document.getElementById('btn-upload-photos').disabled && document.querySelectorAll('.upload-item img[src]').length===4);
+  assert.equal((await(await call('/photo-usage','GET',undefined,token)).json()).usedBytes,0);
+  await pages[0].locator('.upload-item input').first().fill('一起的小日子 <b>说明</b>');
+  await pages[0].click('#btn-upload-photos');
   await pages[0].waitForFunction(()=>document.getElementById('album-upload-status').textContent.includes('4 张已保存'),{},{timeout:30000});
   assert.equal(await pages[0].locator('.album-card').count(),4);assert.ok((await pages[0].locator('.upload-item-status').allTextContents()).some(s=>s.includes('无法解码')));
-  const record=(await(await call('/diary','GET',undefined,token)).json()).record;assert.equal(record.album.length,4);
+  const record=(await(await call('/diary','GET',undefined,token)).json()).record;assert.equal(record.album.length,4);assert.ok(record.album.some(entry=>entry.caption==='一起的小日子 <b>说明</b>'));assert.equal(await pages[0].locator('.album-cap b').count(),0);
   const all=[];
   for(const entry of record.album){
    assert.equal((await call('/photos/'+entry.photoId)).status,401);
@@ -49,10 +53,16 @@ const sha=async bytes=>Buffer.from(await crypto.subtle.digest('SHA-256',bytes)).
   await pages[0].click('#btn-upload-photos');await pages[0].waitForFunction(()=>document.getElementById('album-upload-status').textContent.includes('这批 1 张照片已保存'));
   assert.equal(uploads,1);assert.equal((await(await call('/diary','GET',undefined,token)).json()).record.album.length,6);assert.equal((await(await call('/photo-usage','GET',undefined,token)).json()).usedBytes,before);
   assert.equal(await pages[0].evaluate(()=>Object.values(localStorage).some(v=>v.includes('blob:'))),false);
+  const landscape=all[record.album.findIndex(entry=>entry.caption==='一起的小日子 <b>说明</b>')];
+  const exif=Buffer.from([0x45,0x78,0x69,0x66,0,0,0x49,0x49,0x2a,0,8,0,0,0,1,0,0x12,1,3,0,1,0,0,0,6,0,0,0,0,0,0,0]);
+  const oriented=Buffer.concat([landscape.subarray(0,2),Buffer.from([255,225,0,exif.length+2]),exif,landscape.subarray(2)]).toString('base64');
+  const rotated=await pages[0].evaluate(async base64=>{const bytes=Uint8Array.from(atob(base64),c=>c.charCodeAt(0)),photo=await window.CrushDiary.preparePhoto(new File([bytes],'rotated.jpg',{type:'image/jpeg'}));return {width:photo.width,height:photo.height};},oriented);
+  assert.equal(rotated.width,800);assert.equal(rotated.height,1600);
   const tooMany=Array.from({length:10},(_,n)=>({...payloads[0],name:'many-'+n+'.png'}));await pages[0].setInputFiles('#album-files',tooMany);assert.ok((await pages[0].locator('#album-upload-status').textContent()).includes('最多选择 9'));
   assert.equal(await pages[0].locator('.album-card img').evaluateAll(imgs=>imgs.every(img=>img.getBoundingClientRect().height<=440)),true);
   assert.equal(await pages[0].locator('.app-footer').evaluate(el=>getComputedStyle(el).position),'static');
-  const screenshots=path.resolve(__dirname,'../.wrangler/photo-qa');fs.mkdirSync(screenshots,{recursive:true});for(let n=0;n<2;n++){await pages[n].screenshot({path:path.join(screenshots,n?'mobile.png':'desktop.png'),fullPage:true});await pages[n].evaluate(()=>window.CrushDiary.logout());assert.equal(await pages[n].locator('.album-card').count(),0);assert.equal(await pages[n].locator('#album-lightbox-img').getAttribute('src'),null);}
+  const screenshots=path.resolve(__dirname,'../.wrangler/photo-qa');fs.mkdirSync(screenshots,{recursive:true});for(let n=0;n<2;n++){await pages[n].screenshot({path:path.join(screenshots,n?'mobile.png':'desktop.png'),fullPage:true});if(n===0){await pages[n].setInputFiles('#album-files',Array.from({length:9},(_,i)=>({...payloads[0],name:'nine-'+i+'.png'})));await pages[n].waitForFunction(()=>document.querySelectorAll('.upload-item img[src]').length===9 && !document.getElementById('btn-upload-photos').disabled);}
+  await pages[n].evaluate(()=>window.CrushDiary.logout());assert.equal(await pages[n].locator('.album-card').count(),0);assert.equal(await pages[n].locator('#album-lightbox-img').getAttribute('src'),null);}
   const jpegA=new Uint8Array([255,216,255,1,255,217]),jpegB=new Uint8Array([255,216,255,2,255,217]),idA=await sha(jpegA),idB=await sha(jpegB);
   assert.equal((await call('/__test/photo-control','POST',{mode:'failure'},token)).status,200);
   assert.equal((await call('/photos/'+idA,'PUT',jpegA,token,'image/jpeg')).status,503);

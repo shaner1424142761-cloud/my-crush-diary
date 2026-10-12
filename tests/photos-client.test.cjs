@@ -47,11 +47,11 @@ test('uncompressible images fail explicitly after quality and dimension reductio
 module.exports={setup};
 function albumSetup(){
  const nodes=new Map(),node=id=>{if(!nodes.has(id))nodes.set(id,{value:'',textContent:'',disabled:false,listeners:{},appendChild(){},addEventListener(type,fn){this.listeners[type]=fn;}});return nodes.get(id);};
- let uploaded=0,saved=false;
+ let uploaded=0,saved=false,previews=0;
  const CD={auth:{generation:1,locked:false,user:{id:'yyf'}},store:{isSyncing:false,cloudData:{album:[]}},onAuthChange(){},initSyncBar(){},mountLoveCalendar(){},updateLoveCalendar(){},loadDataFromCloud(){},renderAlbum(){},saveLocalBackup(){},newHistoryItemId:()=> 'stable-entry',preparePhoto:async()=>({photoId:'a'.repeat(64),blob:new Blob(['image'],{type:'image/jpeg'}),width:100,height:50}),uploadPhoto:async()=>{uploaded++;return {usedBytes:5,limitBytes:200*1024*1024};},saveDataToCloud:async()=>saved};
- const context=vm.createContext({window:{CrushDiary:CD},document:{getElementById:node,createElement:()=>({setAttribute(){},appendChild(){},addEventListener(){}})},URL:{createObjectURL:()=> 'blob:preview',revokeObjectURL(){}},Date,alert(){}});
+ const context=vm.createContext({window:{CrushDiary:CD},document:{getElementById:node,createElement:()=>({setAttribute(){},appendChild(){},addEventListener(){}})},URL:{createObjectURL:()=>{previews++;return 'blob:preview';},revokeObjectURL(){}},Date,alert(){}});
  vm.runInContext(fs.readFileSync(path.join(__dirname,'../js/pages/album.js'),'utf8'),context);
- return {CD,context,node,get uploaded(){return uploaded;},set saved(value){saved=value;}};
+ return {CD,context,node,get uploaded(){return uploaded;},get previews(){return previews;},set saved(value){saved=value;}};
 }
 test('upload metadata retry keeps one stable entry without uploading the photo again',async()=>{
  const h=albumSetup();h.CD.selectAlbumFiles([{name:'photo.png',type:'image/png',size:10}]);
@@ -63,7 +63,7 @@ test('upload metadata retry keeps one stable entry without uploading the photo a
 test('selection caps at nine and logout while preparing cannot append an entry',async()=>{
  const h=albumSetup();assert.equal(h.CD.selectAlbumFiles(Array.from({length:10},()=>({name:'x'}))),false);
  assert.equal(h.CD.selectAlbumFiles([{name:'x'}]),true);let release;h.CD.preparePhoto=()=>new Promise(r=>release=r);
- const upload=h.CD.uploadAlbumQueue();h.CD.auth.generation++;h.CD.auth.locked=true;
+ const upload=h.CD.uploadAlbumQueue();await Promise.resolve();await Promise.resolve();h.CD.auth.generation++;h.CD.auth.locked=true;
  release({photoId:'a'.repeat(64),blob:new Blob(['x'],{type:'image/jpeg'})});await upload;
  assert.equal(h.uploaded,0);assert.equal(h.CD.store.cloudData.album.length,0);
 });
@@ -71,4 +71,8 @@ test('network timeout is retryable and does not masquerade as an account change'
  const h=setup();let deadline;h.ctx.setTimeout=fn=>{deadline=fn;return 1;};h.response=()=>new Promise(()=>{});
  const upload=h.CD.uploadPhoto({photoId:'a'.repeat(64),blob:new Blob(['x'],{type:'image/jpeg'})});deadline();
  await assert.rejects(upload,error=>!error.superseded && error.message.includes('超时'));
+});
+test('selection prepares a bounded preview before upload so captions can be assigned visually',async()=>{
+ const h=albumSetup();h.CD.selectAlbumFiles([{name:'photo.png',type:'image/png',size:10}]);
+ await new Promise(setImmediate);assert.ok(h.previews>0);assert.equal(h.uploaded,0);
 });
