@@ -10,6 +10,7 @@
         return m.time + '|' + m.text;
     }
     function albumKey(a) {
+        if(a && typeof a.id==='string' && a.id)return a.id;
         return a.time + '|' + (a.caption || '') + '|' + (a.url || '');
     }
     function blogKey(p) {
@@ -128,11 +129,7 @@
             var k = albumKey(a);
             if (seenAlbum[k]) return;
             seenAlbum[k] = true;
-            albumMerged.push({
-                url: a.url.trim(),
-                caption: typeof a.caption === 'string' ? a.caption.slice(0, 80) : '',
-                time: a.time || ''
-            });
+            albumMerged.push({...a});
         }
         (r.album || []).forEach(addAlbum);
         (l.album || []).forEach(addAlbum);
