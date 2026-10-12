@@ -28,3 +28,9 @@ npm run check:backend
 本地静态预览可运行 `python -m http.server 8000`；生产连接配置未填写前，登录页会提示先完成服务配置。本地后端使用假的测试凭据，运行 `npm run dev:backend`。
 
 公开 Git 历史曾包含旧密钥，必须在 JSONBin 原账号轮换。只移除当前代码中的密钥尚不能让历史泄露失效。
+
+## 本地模拟调试
+
+运行 `npm run dev:local`（这台电脑也可直接运行 `node tools/local-preview.cjs`），打开 `http://127.0.0.1:8765`。共同密码填写 `local-demo-password-123`。页面有明确的本地模拟提示，使用实际 Worker/SQLite 运行环境，所有 JSONBin 请求均被本地模拟适配器处理，完全不接触真实记录。每次启动是新的模拟数据；这些测试内容不会上线。按 Ctrl+C 停止。
+
+完整运行环境验收：`npm run test:runtime`，需要 Chrome 和 Playwright；可用 `PLAYWRIGHT_MODULE` 指定本机已有 Playwright。生产配置不受本地预览影响。
