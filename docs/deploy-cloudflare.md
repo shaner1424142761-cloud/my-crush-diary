@@ -86,3 +86,17 @@ npm run deploy:backend
 ## 双账号迁移
 
 旧共同密码令牌会失效，须重新登录。YYF 对应给 ZXR 的 myHistory，ZXR 对应给 YYF 的 taHistory；后端也检查权限。新留言由签名身份署名，旧留言不补作者。每个账号有自己的本机备份与未同步缓冲；旧 v1 备份不会删除或自动上传，页面提供核对、勾选恢复。当前账号只能恢复对应方向的打分，另一个方向请切换账号；旧留言恢复后仍显示未标注作者。
+
+## 照片服务配置与保留
+
+当前 wrangler.jsonc 在原v1 DiaryObject迁移之后新增v2 PhotoObject与PHOTO_STORE。保留原v1、原Bin和两个迁移，不改类名、不删除命名空间；初次上线时一并部署。后端缺少PHOTO_STORE时照片返回503，日记接口仍正常；health的photosConfigured应为true。照片需要同一双账号登录，没有公开永久图片地址。
+
+每张原图最多20MiB、解码后最多4000万像素，仅接受JPEG/PNG/WebP；手机HEIC请先转换。展示照片最长边1600、最多400KiB，透明背景变为白色，不替代原图备份。图片由内容摘要去重，重试不重复占容量；相同图片加入不同相册条目仍允许。新日期是上传日期，旧时间按原文展示。
+
+应用级照片总容量固定200MiB；这是低于平台存储限额的主动限制，不升级付费、不清理旧图。SQLite单值上限与免费存储限额见[Cloudflare官方限制](https://developers.cloudflare.com/durable-objects/platform/limits/)。平台免费额度用尽或存储失败时显示错误，不宣称保存成功。
+
+上传流程分图片与日记元数据两次保存。图片成功、元数据失败时队列显示待同步，可重试只补同步；元数据已写入分账号本机备份。页面关闭后图片原文件/压缩预览队列不持久保存，未上传图片需重新选择。已上传而没有相册条目的孤立照片可能占用容量，首版不提供删除或自动回收。独立图片存储也应在未来正式使用时规划备份；JSONBin版本和日记快照不含照片二进制。
+
+退出、令牌失效或账号切换会取消读图/上传请求、撤销Blob URL并关闭大图。备份只保存photoId等引用，不保存Blob URL或密码。
+
+继续遵循本地确认后再上线：npm test、npm run test:accounts、npm run test:photos、npm run check:public、npm run check:backend。所有本地自动验收用合成数据；正式部署与真实库核对另行进行。测试fixture有故障/容量注入接口，正式worker不包含它。

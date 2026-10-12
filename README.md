@@ -36,3 +36,9 @@ npm run check:backend
 完整运行环境验收：`npm run test:runtime`，需要 Chrome 和 Playwright；可用 `PLAYWRIGHT_MODULE` 指定本机已有 Playwright。生产配置不受本地预览影响。
 
 YYF 只能给 ZXR 打分，ZXR 只能给 YYF 打分。新悄悄话显示真实作者，旧留言保持未署名。未同步备份按账号隔离，旧 v1 备份始终保留，可在核对面板勾选恢复。
+
+## 私人照片相册
+
+现在支持选择 JPEG / PNG / WebP 直接上传，一次最多9张。浏览器先压缩成最长边1600像素、最多400KiB的JPEG展示照片，原图请另存。两人登录后都可上传和查看；旧图片链接、说明与时间保留。手机两列、桌面三列，点击进入大图，支持方向键和Esc。
+
+首版容量为200MiB，存于SQLite Durable Object，不使用R2或新增付费服务。图片上传后相册记录仍须同步；失败可用同一队列重试。已上传图片没有删除接口，孤立上传也占容量；免费额度或容量耗尽会明确失败。`npm run test:photos` 使用合成图片和实际本地Worker/SQLite进行验收，不读取真实照片。

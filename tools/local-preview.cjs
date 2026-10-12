@@ -7,7 +7,7 @@ async function startPreview({port=8765,backendPort=8877,quiet=false}={}){
  const config=path.join(state,'wrangler.json');
  fs.writeFileSync(config,JSON.stringify({name:'diary-local-demo',main:path.join(root,'tests/fixtures/local-worker.mjs').replace(/\\/g,'/'),compatibility_date:'2026-10-11',workers_dev:false,
   vars:{YYF_PASSWORD:passwords.yyf,ZXR_PASSWORD:passwords.zxr,SESSION_SECRET:'local-demo-secret-12345678901234567890',JSONBIN_KEY:'fake-key-local-only',JSONBIN_BIN_ID:'a'.repeat(24),ALLOWED_ORIGINS:website},
-  durable_objects:{bindings:[{name:'DIARY_STORE',class_name:'DiaryObject'}]},migrations:[{tag:'v1',new_sqlite_classes:['DiaryObject']}]}));
+  durable_objects:{bindings:[{name:'DIARY_STORE',class_name:'DiaryObject'},{name:'PHOTO_STORE',class_name:'PhotoObject'}]},migrations:[{tag:'v1',new_sqlite_classes:['DiaryObject']},{tag:'v2',new_sqlite_classes:['PhotoObject']}]}));
  const child=spawn(process.execPath,[path.join(root,'node_modules/wrangler/bin/wrangler.js'),'dev','--config',config,'--local','--ip','127.0.0.1','--port',String(backendPort),'--persist-to',path.join(state,'storage')],{cwd:root,stdio:['ignore','pipe','pipe'],env:{...process.env,WRANGLER_SEND_METRICS:'false'}});
  let output='';child.stdout.on('data',chunk=>output=(output+chunk).slice(-5000));child.stderr.on('data',chunk=>output=(output+chunk).slice(-5000));
  const server=http.createServer((req,res)=>{

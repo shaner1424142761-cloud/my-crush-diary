@@ -3,7 +3,11 @@
     function locked(){return CD.auth && CD.auth.locked;}
     function privateId(entry){return entry && /^[a-f0-9]{64}$/.test(entry.photoId || '') && entry.url==='private-photo:'+entry.photoId?entry.photoId:null;}
     function legacyURL(entry){try{var url=new URL(entry.url);return ['http:','https:'].indexOf(url.protocol)>=0?url.href:null;}catch(_){return null;}}
-    function timeLabel(entry){return (privateId(entry)?'上传于 ':'')+(entry.time || '');}
+    function timeLabel(entry){
+        if(!privateId(entry))return entry.time || '';
+        var date=new Date(entry.time);
+        return '上传于 '+(/^[0-9]{4}-[0-9]{2}-[0-9]{2}T/.test(entry.time) && !isNaN(date.getTime())?date.toLocaleString('zh-CN',{year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit'}):entry.time || '');
+    }
     async function imageURL(entry){var id=privateId(entry);if(id)return CD.getPhotoURL(id);var url=legacyURL(entry);if(!url)throw new Error('图片链接格式有误');return url;}
     CD.renderAlbum=function(){
         var grid=document.getElementById('album-grid');if(!grid)return;

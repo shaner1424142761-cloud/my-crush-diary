@@ -12,4 +12,31 @@ export class DiaryObject extends RealDiaryObject {
         return Response.json({record});
     });}
 }
-export default worker;
+import {PhotoObject as RealPhotoObject,PHOTO_LIMIT} from '../../backend/photo-object.mjs';
+import {verifyToken} from '../../backend/auth.mjs';
+export class PhotoObject extends RealPhotoObject {
+    constructor(ctx,env){
+        const fault={fail:false};
+        const wrapped={blockConcurrencyWhile:fn=>ctx.blockConcurrencyWhile(fn),storage:{get:key=>ctx.storage.get(key),transaction:fn=>ctx.storage.transaction(tx=>fn({get:key=>tx.get(key),put:async(key,value)=>{await tx.put(key,value);if(key==='usedBytes' && fault.fail){fault.fail=false;throw new Error('Synthetic storage failure');}}}))}};
+        super(wrapped,env);this.realCtx=ctx;this.fault=fault;
+    }
+    fetch(request){
+        if(new URL(request.url).pathname!=='/__test/photo-control')return super.fetch(request);
+        return this.realCtx.blockConcurrencyWhile(async()=>{
+            const data=await request.json();
+            if(data.mode==='capacity' && Number.isSafeInteger(data.usedBytes) && data.usedBytes>=0 && data.usedBytes<=PHOTO_LIMIT)await this.realCtx.storage.put('usedBytes',data.usedBytes);
+            else if(data.mode==='failure')this.fault.fail=true;
+            else return Response.json({message:'Bad fixture request'},{status:400});
+            return Response.json({ok:true});
+        });
+    }
+}
+export default {async fetch(request,env){
+    // This control route exists only in the fake local adapter, never production.
+    if(new URL(request.url).pathname==='/__test/photo-control'){
+        const origin=request.headers.get('Origin'),auth=request.headers.get('Authorization') || '';
+        if(request.method!=='POST' || origin!==env.ALLOWED_ORIGINS || !auth.startsWith('Bearer ') || !await verifyToken(auth.slice(7),env))return Response.json({message:'Denied'},{status:401});
+        return env.PHOTO_STORE.get(env.PHOTO_STORE.idFromName('our-photos')).fetch(request);
+    }
+    return worker.fetch(request,env);
+}};
