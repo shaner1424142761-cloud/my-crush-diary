@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-12-photo-upload-design.md`（用户已确认压缩展示照片方案）。
 
+**Prerequisite:** 先完成 `docs/superpowers/plans/2026-10-12-couple-accounts.md`。相册沿用 v2 带签名 sub 的 yyf/zxr 会话，生产配置使用 YYF_PASSWORD/ZXR_PASSWORD；本地登录使用两个模拟账号。Task 2 的 CD.onAuthChange 由双账号任务提供，只需接入照片取消与 URL 清理。双方均可上传/查看照片，分账号待同步相册元数据仍走现有缓冲保护。
+
 ## Global Constraints
 
 - 现有 Cloudflare Free 账号；不新增付费订阅、R2、数据库账号或第三方图床。
@@ -133,6 +135,6 @@ Spec coverage：上传、压缩、容量、私人读取、旧相册保留、重�
 
 ## Execution Handoff
 
-用户新增双账号和对应打分权限要求；相册工作保留，但先完成 `docs/superpowers/specs/2026-10-12-couple-accounts-design.md` 中的身份升级。该设计和新增实施计划确认后，修订本计划的密码配置、签名身份、分账号备份及模拟登录依赖；暂不按旧共同密码接口开始实现。
+用户新增的双账号设计已确认；相册工作保留，先执行双账号实施计划，随后按上述 Prerequisite 使用新的身份和缓冲接口继续本计划，不再按旧共同密码接口实现。
 
 沿用用户此前选择的直接实施：当前会话逐项实现，最后一次独立审查；不再询问执行方式。用户确认本计划后才开始实现。
