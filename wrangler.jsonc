@@ -5,7 +5,7 @@
   "compatibility_date": "2026-10-11",
   "workers_dev": true,
   "vars": {
-    "JSONBIN_BIN_ID": "",
+    "JSONBIN_BIN_ID": "69C0F2B0B7ec241DDC94074f",
     "JSONBIN_KEY_HEADER": "X-Master-Key",
     "ALLOWED_ORIGINS": "https://shaner1424142761-cloud.github.io"
   },

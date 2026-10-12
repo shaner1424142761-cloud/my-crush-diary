@@ -148,3 +148,17 @@ test('legacy-import uses the same authenticated gate and leaves old messages uns
  for(let i=0;i<2;i++)assert.equal((await h.request('/legacy-import','POST',data,token)).status,200);
  assert.equal(h.cloud.myScore,-4);assert.equal(h.cloud.messages.length,1);assert.equal(h.cloud.messages[0].authorId,undefined);
 });
+
+test('default upstream fetch preserves the native global receiver',async()=>{
+ const originalFetch=globalThis.fetch;
+ globalThis.fetch=async function(){
+  if(this!==globalThis)throw new TypeError('Illegal invocation');
+  return Response.json({record:base()});
+ };
+ try {
+  const object=new DiaryObject({},{});
+  const record=await object.upstream('GET');
+  assert.equal(record.taScore,13);
+  assert.equal(record.taHistory.length,1);
+ }finally{globalThis.fetch=originalFetch;}
+});

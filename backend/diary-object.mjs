@@ -4,7 +4,7 @@ import {HttpError,json,readJson,validateRecord} from './http.mjs';
 import {authorizeChanges,legacyImport} from './permissions.mjs';
 const rules=globalThis.CrushDiaryRecords.createRecordTools();
 export class DiaryObject {
-    constructor(ctx,env,fetcher=globalThis.fetch) {this.ctx=ctx;this.env=env;this.fetcher=fetcher;}
+    constructor(ctx,env,fetcher=globalThis.fetch.bind(globalThis)) {this.ctx=ctx;this.env=env;this.fetcher=fetcher;}
     fetch(request) {
         // Keep the input gate closed throughout the external read/merge/write.
         // Catch inside the gate so ordinary upstream failures do not reset the object.
