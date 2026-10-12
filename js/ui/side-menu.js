@@ -80,6 +80,10 @@
         nav.appendChild(a);
     });
 
+    var logout = document.createElement('button');
+    logout.type = 'button'; logout.className = 'side-menu__link'; logout.textContent = '退出登录';
+    logout.addEventListener('click', function () { closeMenu(); window.CrushDiary.logout(); });
+    nav.appendChild(logout);
     panel.appendChild(header);
     panel.appendChild(nav);
 

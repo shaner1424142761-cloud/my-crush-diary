@@ -1,9 +1,6 @@
 (function (CD) {
     async function fetchLatestRecord() {
-        var response = await fetch(CD.FETCH_URL + '?t=' + Date.now(), {
-            headers: { 'X-Master-Key': CD.API_KEY, 'Cache-Control': 'no-cache' },
-            cache: 'no-store'
-        });
+        var response = await CD.authenticatedFetch('/diary');
         if (!response.ok) throw new Error('拉取失败');
         var data = await response.json();
         var rec = data.record;
@@ -16,12 +13,9 @@
     }
 
     CD.loadDataFromCloud = async function (onRender) {
-        if (CD.store.isSyncing) return;
+        if (CD.store.isSyncing && !(CD.auth && CD.auth.locked)) return;
         CD.store.onRender = onRender;
-        if (CD.BIN_ID.indexOf('这里填入') !== -1) {
-            afterLoadRender(onRender);
-            return;
-        }
+        if (!(await CD.ensureAuthenticated())) return;
 
         var initialBackup = CD.loadLocalBackup();
         if (initialBackup) {
@@ -45,6 +39,7 @@
                 CD.setStatus('✅ 数据已最新', '#32cd32', false);
             }
         } catch (e) {
+            if (e.authRequired) { CD.setStatus('请重新登录，记录仍在本机备份', '#ff8800', false); return; }
             var backup2 = CD.loadLocalBackup();
             if (backup2 && !CD.isCloudEmpty(backup2)) {
                 CD.store.cloudData = backup2;
@@ -68,16 +63,14 @@
             var remote = await fetchLatestRecord();
             CD.store.cloudData = CD.mergeRecords(remote, CD.store.cloudData);
             CD.saveLocalBackup(CD.store.cloudData);
-            var response = await fetch(CD.UPDATE_URL, {
+            var response = await CD.authenticatedFetch('/diary', {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Master-Key': CD.API_KEY,
-                    'X-Bin-Versioning': 'true'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(CD.store.cloudData)
             });
             if (!response.ok) throw new Error('保存失败');
+            var data = await response.json();
+            CD.store.cloudData = CD.mergeRecords(CD.normalizeFetched(data.record), CD.store.cloudData);
             CD.saveLocalBackup(CD.store.cloudData);
             CD.setStatus('✅ 数据已保存', '#32cd32', false);
             saved = true;

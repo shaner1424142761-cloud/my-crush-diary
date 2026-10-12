@@ -1,0 +1,7 @@
+# LOCAL ONLY. Copy to .dev.vars; never commit real values.
+# Use a test Bin or mock upstream for write testing.
+DIARY_PASSWORD="replace-with-at-least-16-characters"
+SESSION_SECRET="replace-with-a-random-secret-of-at-least-32-characters"
+JSONBIN_KEY="replace-with-your-private-key"
+JSONBIN_BIN_ID="replace-with-test-bin-id"
+ALLOWED_ORIGINS="http://localhost:8000,http://127.0.0.1:8000"

@@ -20,6 +20,12 @@ function setup(fetch) {
     }
     ['js/constants.js', 'js/store.js', 'shared/records.js', 'js/merge.js'].forEach(run);
     const cd = context.window.CrushDiary;
+    cd.ensureAuthenticated = async () => true;
+    cd.authenticatedFetch = async (path, options={}) => {
+        const result = await context.fetch(path, options);
+        if (result.ok && !result.json && options.method === 'PUT') result.json = async () => ({record:JSON.parse(options.body)});
+        return result;
+    };
     cd.setStatus = (text, color, syncing) => { cd.store.isSyncing = syncing; cd.status = text; };
     run('js/api.js');
     return { cd, storage, run, context };
@@ -203,18 +209,19 @@ test('successful sync persists deletion markers and redraws the merged score', a
     assert.equal(cd.store.isSyncing, false);
 });
 
-test('saving requests a cloud history version instead of destroying the last snapshot', async () => {
+test('saving uses the backend diary endpoint without cloud credentials', async () => {
     let versioning;
     const { cd } = setup(async (url, options = {}) => {
         if (options.method === 'PUT') {
-            versioning = options.headers['X-Bin-Versioning'];
+            versioning = url;
+            assert.equal(options.headers['X-Master-Key'], undefined);
             return { ok: true };
         }
         return { ok: true, json: async () => ({ record: ledger() }) };
     });
     cd.store.cloudData = ledger();
     await cd.saveDataToCloud();
-    assert.equal(versioning, 'true');
+    assert.equal(versioning, '/diary');
 });
 
 function pageSetup(page, data, remoteData = data) {
@@ -285,3 +292,9 @@ for (const entry of [
         for (const old of data[entry.field]) assert.ok(saved.some(item => JSON.stringify(item) === JSON.stringify(old)), 'old memory missing');
     });
 }
+
+test('cloud loading waits for login before rendering local private memories',async()=>{
+ const {cd}=setup();cd.saveLocalBackup(ledger());let rendered=0;
+ cd.ensureAuthenticated=async()=>false;await cd.loadDataFromCloud(()=>rendered++);
+ assert.equal(rendered,0);
+});

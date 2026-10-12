@@ -1,7 +1,4 @@
 (function (CD) {
-    var B = CD.BIN_ID;
-    CD.FETCH_URL = 'https://api.jsonbin.io/v3/b/' + B + '/latest';
-    CD.UPDATE_URL = 'https://api.jsonbin.io/v3/b/' + B;
     CD.STORAGE_KEY = 'myCrushDiary_backup_v1';
     CD.SEEN_STORAGE_KEY = 'myCrushDiary_seen_v1';
     CD.MAX_ALBUM = 24;

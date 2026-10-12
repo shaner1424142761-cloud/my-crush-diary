@@ -1,0 +1,16 @@
+body.auth-locked .container, body.auth-locked #syncStatus,
+body.auth-locked .wall-calendar, body.auth-locked .side-menu,
+body.auth-locked .side-menu-toggle, body.auth-locked .side-menu-backdrop { display: none !important; }
+.auth-panel { box-sizing: border-box; max-width: 420px; margin: 12vh auto 32px; padding: 32px; border-radius: 24px; background: #fff; box-shadow: 0 12px 40px #d5c5dd66; color: #584d64; }
+.auth-panel[hidden] { display: none; }
+.auth-panel h1 { font-size: 26px; color: #ae719d; }
+.auth-panel p { line-height: 1.6; }
+.auth-panel label { display: block; margin: 18px 0 8px; }
+.auth-panel input[type=password] { box-sizing: border-box; width: 100%; padding: 12px; border: 1px solid #dac9df; border-radius: 10px; font-size: 18px; }
+.auth-panel .auth-remember { font-size: 14px; }
+.auth-panel button { width: 100%; margin-top: 16px; padding: 12px; border: 0; border-radius: 12px; background: #b989ae; color: white; font-size: 16px; cursor: pointer; }
+.auth-panel button:disabled { opacity: .6; }
+#auth-error { color: #a23e4d; }
+.auth-warning { max-width: 420px; margin: 16px auto; color: #995522; font-size: 14px; }
+.auth-warning:empty { display: none; }
+@media (max-width: 480px) { .auth-panel { margin: 10vh 16px 24px; padding: 24px; } }

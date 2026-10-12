@@ -12,8 +12,9 @@
     };
 
     CD.setStatus = function (text, color, disabled) {
-        if (!syncEl) return;
+        disabled = !!disabled || !!(CD.auth && CD.auth.locked);
         CD.store.isSyncing = disabled;
+        if (!syncEl) return;
         syncEl.textContent = text;
         syncEl.style.color = color;
         CD.refreshActionButtons();
