@@ -18,6 +18,12 @@
         if (CD.refreshNavBadges) CD.refreshNavBadges();
     }
 
+    function hasPendingChanges(remote, local) {
+        // Compare the effective merged records, so old caches, server-assigned
+        // authors and absent optional fields do not create false pending states.
+        return JSON.stringify(CD.mergeRecords(remote, {})) !== JSON.stringify(CD.mergeRecords(remote, local));
+    }
+
     CD.loadDataFromCloud = async function (onRender) {
         if (CD.store.isSyncing && !(CD.auth && CD.auth.locked)) return;
         CD.store.onRender = onRender;
@@ -38,11 +44,14 @@
             var localOnly = CD.isCloudEmpty(normalized) && backup && !CD.isCloudEmpty(backup);
 
             CD.store.cloudData = CD.mergeRecords(normalized, CD.store.cloudData);
+            CD.store.hasPending = hasPendingChanges(normalized, CD.store.cloudData);
             CD.saveLocalBackup(CD.store.cloudData);
             afterLoadRender(onRender);
             if(CD.showLegacyRecovery)CD.showLegacyRecovery(normalized);
             if (localOnly) {
                 CD.setStatus('📦 云端为空，已显示本机备份；尚未上传', '#ff8800', false);
+            } else if (CD.store.hasPending) {
+                CD.setStatus('📦 有本机记录待同步，请点击“重试同步”上传', '#ff8800', false);
             } else {
                 CD.setStatus('✅ 数据已最新', '#32cd32', false);
             }
@@ -54,6 +63,7 @@
             }
             var backup2 = CD.loadLocalBackup();
             if (backup2 && !CD.isCloudEmpty(backup2)) {
+                CD.store.hasPending = true;
                 CD.store.cloudData = CD.mergeRecords(backup2, CD.store.cloudData);
                 afterLoadRender(onRender);
                 CD.setStatus('⚠️ 云端不可用，已显示本机备份（换网络后可再试同步）', '#ff8800', false);
@@ -69,6 +79,7 @@
         var active = generation();
         // Persist the user's action before the first network await.
         CD.saveLocalBackup(CD.store.cloudData);
+        CD.store.hasPending = true;
         CD.setStatus('⬆️ 上传中...', '#ffaa33', true);
         var saved = false;
         try {
@@ -84,8 +95,11 @@
             if (!response.ok) {var failure=await response.json();assertCurrent(active);throw new Error(failure.message || '保存失败');}
             var data = await response.json();
             assertCurrent(active);
-            CD.store.cloudData = CD.mergeRecords(CD.normalizeFetched(data.record), CD.store.cloudData);
+            var acknowledged = CD.normalizeFetched(data.record);
+            CD.store.hasPending = hasPendingChanges(acknowledged, CD.store.cloudData);
+            CD.store.cloudData = CD.mergeRecords(acknowledged, CD.store.cloudData);
             var backedUp = CD.saveLocalBackup(CD.store.cloudData);
+            if (CD.store.hasPending) throw new Error('云端尚未确认全部记录，请重试同步');
             CD.setStatus(backedUp === false ? '✅ 云端已保存；本机备份不可用' : '✅ 数据已保存', '#32cd32', false);
             saved = true;
         } catch (e) {

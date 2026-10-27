@@ -4,6 +4,28 @@ import worker from '../backend/worker.mjs';
 import { DiaryObject } from '../backend/diary-object.mjs';
 import { issueToken, verifyToken } from '../backend/auth.mjs';
 const origin='https://shaner1424142761-cloud.github.io';
+test('upstream write refusals expose HTTP status and a safe category without leaking credentials',async()=>{
+ const warnings=[],original=console.warn;console.warn=(...args)=>warnings.push(args);
+ try{
+  const object=new DiaryObject({}, {JSONBIN_KEY:'fake-private-key'}, async()=>Response.json({message:'Maximum version limit reached fake-private-key'},{status:403}));
+  await assert.rejects(object.upstream('PUT',{}),e=>e.status===502 && e.message.includes('403') && !e.message.includes('fake-private-key'));
+  assert.equal(warnings.length,1);assert.deepEqual(warnings[0],['diary-upstream-failure',{method:'PUT',status:403,category:'version-limit'}]);
+ }finally{console.warn=original;}
+});
+test('ordinary saves remain writable when upstream version history is full',async()=>{
+ let cloud=base();const calls=[];
+ const object=new DiaryObject({}, {}, async(url,options)=>{
+  calls.push(options);
+  if(options.method==='PUT'){
+   if(options.headers['X-Bin-Versioning']!=='false')return Response.json({message:'Maximum version limit reached'},{status:403});
+   cloud=JSON.parse(options.body);return Response.json({record:cloud});
+  }
+  return Response.json({record:cloud});
+ });
+ const updated=base();updated.taHistory.push({id:'pending',change:5,time:'10-27'});
+ await object.upstream('PUT',updated);
+ const saved=await object.upstream('GET');assert.equal(saved.taHistory.length,2);assert.equal(saved.taHistory[1].id,'pending');assert.equal(calls.some(c=>c.method==='DELETE'),false);
+});
 const base=()=>({taScore:13,taHistory:[{id:'first',change:10,time:'10-01'}],myScore:0,myHistory:[],messages:[],album:[],blogPosts:[],wishes:[{id:'w',text:'旅行',updatedAt:1}],anniversaries:[],futureSection:{note:'keep'}});
 function harness() {
  const storage=new Map();

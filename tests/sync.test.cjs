@@ -40,6 +40,25 @@ function ledger(score = 10) {
 }
 const plain = value => value === undefined ? undefined : JSON.parse(JSON.stringify(value));
 
+test('a successful read with pending local scores must not report fully synced',async()=>{
+ const remote=ledger(),pending=ledger(15);pending.taHistory.push({id:'pending-score',change:5,time:'10-27 12:00'});
+ const {cd}=setup(async()=>({ok:true,json:async()=>({record:remote})}));
+ cd.store.cloudData=pending;cd.saveLocalBackup(pending);await cd.loadDataFromCloud();
+ assert.equal(cd.store.cloudData.taScore,15);assert.equal(cd.store.hasPending,true);assert.match(cd.status,/待同步/);assert.doesNotMatch(cd.status,/已最新/);
+});
+test('pending completion, deletion and schedule edits are detected without uploading on read',async()=>{
+ for(const edit of [data=>{data.wishes[0].done=true;data.wishes[0].updatedAt=20;},data=>{data.deletedItems={anniversaries:{'anniv-1':20}};},data=>{data.schedules=[{id:'schedule',title:'pending',updatedAt:20}];}]){
+  const remote=ledger(),pending=ledger();edit(pending);let puts=0;
+  const {cd}=setup(async(path,options)=>{if(options.method==='PUT')puts++;return {ok:true,json:async()=>({record:remote})};});cd.store.cloudData=pending;await cd.loadDataFromCloud();assert.equal(cd.store.hasPending,true);assert.equal(puts,0);
+ }
+});
+test('a successful read of records already in cloud clears pending state',async()=>{
+ const remote=ledger();const {cd}=setup(async()=>({ok:true,json:async()=>({record:remote})}));cd.store.hasPending=true;cd.store.cloudData=plain(remote);await cd.loadDataFromCloud();assert.equal(cd.store.hasPending,false);assert.match(cd.status,/已最新/);
+});
+test('an acknowledged PUT that omitted a pending score cannot claim saved',async()=>{
+ const remote=ledger(),{cd}=setup(async()=>({ok:true,json:async()=>({record:remote})}));cd.store.cloudData=ledger(15);cd.store.cloudData.taHistory.push({id:'pending',change:5,time:'10-27'});assert.equal(await cd.saveDataToCloud(),false);assert.equal(cd.store.hasPending,true);assert.doesNotMatch(cd.status,/数据已保存/);assert.equal(cd.loadLocalBackup().taScore,15);
+});
+
 test('deductions survive merging an older cloud total', () => {
     const { cd } = setup();
     const remote = ledger();

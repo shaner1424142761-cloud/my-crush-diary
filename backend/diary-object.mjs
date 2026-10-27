@@ -34,10 +34,18 @@ export class DiaryObject {
         try {
             const bin=this.env.JSONBIN_BIN_ID;
             const headers={[this.env.JSONBIN_KEY_HEADER || 'X-Master-Key']:this.env.JSONBIN_KEY};
-            if(method==='PUT'){headers['Content-Type']='application/json';headers['X-Bin-Versioning']='true';}
+            // Durable Object snapshots protect the previous state. JSONBin's finite
+            // version history must not prevent ordinary saves once it reaches its cap.
+            if(method==='PUT'){headers['Content-Type']='application/json';headers['X-Bin-Versioning']='false';}
             const response=await this.fetcher('https://api.jsonbin.io/v3/b/'+bin+(method==='GET'?'/latest':''),
                 {method,headers,signal:controller.signal,cache:'no-store',body:method==='PUT'?JSON.stringify(record):undefined});
-            if(!response.ok)throw new Error('Upstream error');
+            if(!response.ok){
+                let message='';try{const failure=await response.json();message=typeof failure.message==='string'?failure.message:'';}catch{}
+                const category=/version/i.test(message)?'version-limit':/size|too large|bytes/i.test(message)?'record-size':/quota|limit|exceed/i.test(message)?'quota':/permission|read.only|unauthor|access|invalid.*key/i.test(message)?'permission':'unknown';
+                // Log only fixed categories and status, never upstream response text or credentials.
+                console.warn('diary-upstream-failure',{method,status:response.status,category});
+                throw new HttpError(502,'云端记录库'+(method==='PUT'?'拒绝保存':'读取失败')+'（HTTP '+response.status+'），本机备份仍保留。');
+            }
             const data=await response.json();
             if(method==='GET'){
                 try {validateRecord(data.record);return rules.normalizeFetched(data.record);}

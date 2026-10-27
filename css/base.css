@@ -1,4 +1,7 @@
 /* 避免有/无纵向滚动条时主栏左右跳动 */
+.sync-actions { margin: 0 0 10px; text-align: center; }
+.sync-actions[hidden], body.auth-locked .sync-actions { display: none; }
+.sync-actions button { background: #895a7e; color: #fff; padding: 8px 18px; }
 html {
     scrollbar-gutter: stable;
 }

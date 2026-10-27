@@ -73,7 +73,7 @@ npm run deploy:backend
 
 ## 免费额度和故障恢复
 
-该实现使用 SQLite Durable Object，对同一个 Bin 的整个读取、合并、保存过程串行处理，并留最近 3 份写入前快照；JSONBin 保存也开启版本。快照不能代替独立备份。
+该实现使用 SQLite Durable Object，对同一个 Bin 的整个读取、合并、保存过程串行处理，并留最近 3 份写入前快照。JSONBin 日常保存显式关闭新增版本（`X-Bin-Versioning: false`），避免到达其有限的版本数量上限后所有保存都被拒绝；不调用删除版本接口。快照不能代替独立备份。
 
 截至 2026-10-12，Cloudflare Free 支持 SQLite Durable Objects；Workers 和 Durable Objects 各有每日 100,000 请求额度。免费限额用尽时操作失败，前端保留本机备份，等待额度重置后重试，不升级付费。具体存储/计算限制以[官方定价](https://developers.cloudflare.com/durable-objects/platform/pricing/)及[Workers 定价](https://developers.cloudflare.com/workers/platform/pricing/)为准。原 JSONBin 的存储大小和请求限制仍适用，本方案不会为满足上限截掉旧记录。
 

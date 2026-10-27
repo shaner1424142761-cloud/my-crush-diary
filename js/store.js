@@ -20,12 +20,14 @@
     var activeId=null, suspended=false, buffers=Object.create(null), unsafe=Object.create(null);
     function backupKey(){return activeId?'myCrushDiary_backup_v2_'+activeId:CD.auth?null:CD.STORAGE_KEY;}
     CD.activateUser=function(user){
+        CD.store.hasPending=false;
         if(activeId===user.id){if(suspended)CD.store.cloudData=CD.loadLocalBackup() || CD.defaultCloudData();suspended=false;return;}
         if(activeId && !suspended)CD.saveLocalBackup(CD.store.cloudData);
         activeId=user.id;suspended=false;
         CD.store.cloudData=CD.loadLocalBackup() || CD.defaultCloudData();
     };
     CD.suspendUser=function(){
+        CD.store.hasPending=false;
         if(suspended)return;
         if(activeId)CD.saveLocalBackup(CD.store.cloudData);
         CD.store.cloudData=CD.defaultCloudData();suspended=true;
