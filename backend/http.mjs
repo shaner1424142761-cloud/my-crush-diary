@@ -1,3 +1,4 @@
+import '../shared/schedule.js';
 export class HttpError extends Error {
     constructor(status,message){super(message);this.status=status;}
 }
@@ -26,6 +27,7 @@ export async function readJson(request) {
     return value;
 }
 export function validateRecord(record) {
+    if(record.schedules!==undefined && (!Array.isArray(record.schedules) || record.schedules.some(item=>!globalThis.CrushDiarySchedule.validEntry(item))))throw new HttpError(400,'日程格式有误，请检查日期、时间和重复设置。');
     const arrays={taHistory:'change',myHistory:'change',history:'change',messages:'text',album:'url',blogPosts:null,wishes:'text',anniversaries:'date'};
     for(const [field,required] of Object.entries(arrays)){
         if(record[field]===undefined)continue;

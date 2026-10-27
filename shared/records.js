@@ -68,8 +68,8 @@
     }
 
     function mergeDeletions(remote, local) {
-        var result = { wishes: Object.create(null), anniversaries: Object.create(null) };
-        ['wishes', 'anniversaries'].forEach(function (section) {
+        var result = { wishes: Object.create(null), anniversaries: Object.create(null), schedules: Object.create(null) };
+        ['wishes', 'anniversaries', 'schedules'].forEach(function (section) {
             [remote, local].forEach(function (data) {
                 var entries = data.deletedItems && data.deletedItems[section];
                 if (!entries || typeof entries !== 'object' || Array.isArray(entries)) return;
@@ -223,6 +223,13 @@
         var annivArr = Object.keys(annivMap).map(function (k) { return annivMap[k]; });
         annivArr.sort(function (a, b) { return (b.updatedAt || 0) - (a.updatedAt || 0); });
         var anniversaries = annivArr;
+        var scheduleMap = new Map();
+        (r.schedules || []).concat(l.schedules || []).forEach(function (item) {
+            if (!item || typeof item.id !== 'string' || !item.id || Object.prototype.hasOwnProperty.call(deletedItems.schedules, item.id)) return;
+            var old = scheduleMap.get(item.id);
+            if (!old || (Number(item.updatedAt) || 0) > (Number(old.updatedAt) || 0)) scheduleMap.set(item.id, {...item});
+        });
+        var schedules = Array.from(scheduleMap.values());
         var baseline = { ta: scoreBaseline(r, l, 'ta'), my: scoreBaseline(r, l, 'my') };
         var taScore = taScoreHistSum + baseline.ta;
         var myScore = myScoreHistSum + baseline.my;
@@ -238,6 +245,7 @@
             blogPosts: blogPosts,
             wishes: wishes,
             anniversaries: anniversaries,
+            schedules: schedules,
             scoreBaseline: baseline,
             deletedItems: deletedItems
         };
@@ -252,14 +260,15 @@
         var noBlog = !d.blogPosts || d.blogPosts.length === 0;
         var noWish = !d.wishes || d.wishes.length === 0;
         var noAnniv = !d.anniversaries || d.anniversaries.length === 0;
-        return noHist && noMsg && zeroScore && noAlbum && noBlog && noWish && noAnniv;
+        var noSchedule = !d.schedules || d.schedules.length === 0;
+        return noHist && noMsg && zeroScore && noAlbum && noBlog && noWish && noAnniv && noSchedule;
     };
 
     CD.normalizeFetched = function (fetched) {
         if (!fetched || typeof fetched !== 'object' || Array.isArray(fetched)) {
             throw new Error('云端数据格式异常');
         }
-        ['taHistory', 'myHistory', 'history', 'messages', 'album', 'blogPosts', 'wishes', 'anniversaries'].forEach(function (key) {
+        ['taHistory', 'myHistory', 'history', 'messages', 'album', 'blogPosts', 'wishes', 'anniversaries', 'schedules'].forEach(function (key) {
             if (fetched[key] !== undefined && !Array.isArray(fetched[key])) {
                 throw new Error('云端数据格式异常：' + key);
             }
@@ -275,6 +284,7 @@
             blogPosts: fetched.blogPosts || [],
             wishes: fetched.wishes || [],
             anniversaries: fetched.anniversaries || [],
+            schedules: fetched.schedules || [],
             scoreBaseline: fetched.scoreBaseline,
             deletedItems: fetched.deletedItems || { wishes: {}, anniversaries: {} }
         };

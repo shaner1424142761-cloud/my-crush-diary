@@ -14,7 +14,8 @@
     "dev:local": "node tools/local-preview.cjs",
     "test:runtime": "node tools/runtime-smoke.cjs",
     "test:accounts": "node tools/accounts-runtime-smoke.cjs",
-    "test:photos": "node tools/photo-runtime-smoke.cjs"
+    "test:photos": "node tools/photo-runtime-smoke.cjs",
+    "test:schedule": "node tools/schedule-runtime-smoke.cjs"
   },
   "devDependencies": {
     "wrangler": "^4.149.0"

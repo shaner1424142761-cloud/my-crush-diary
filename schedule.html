@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>两人日程 · 心动手记</title>
+    <link rel="stylesheet" href="css/base.css">
+    <link rel="stylesheet" href="css/nav.css">
+    <link rel="stylesheet" href="css/footer.css">
+    <link rel="stylesheet" href="css/auth.css">
+    <link rel="stylesheet" href="css/schedule.css">
+</head>
+<body class="auth-locked">
+    <header class="app-topbar" role="banner"><div class="app-topbar__inner">
+        <span id="side-menu-toggle-host" class="app-topbar__menu-host"></span>
+        <a href="index.html" class="app-topbar__brand">心动手记</a>
+        <div class="app-topbar__actions"><a href="index.html" class="app-topbar__icon-btn" aria-label="回到首页">⌂</a></div>
+    </div></header>
+    <div class="app-topbar-spacer" aria-hidden="true"></div>
+    <div id="syncStatus" role="status">☁️ 连接云端中...</div>
+    <div class="container schedule-container"><main>
+        <section class="panel schedule-panel">
+            <div class="schedule-heading"><div><p class="schedule-eyebrow">OUR LITTLE PLANS</p><h1>两人日程</h1><p class="schedule-subtitle">把忙碌记下来，把空闲留给彼此。</p></div><button type="button" id="schedule-new" class="schedule-primary">＋ 添加安排</button></div>
+            <div class="schedule-toolbar">
+                <div class="schedule-week-nav"><button type="button" id="schedule-prev" aria-label="上一周">‹</button><strong id="schedule-week-label"></strong><button type="button" id="schedule-next" aria-label="下一周">›</button><button type="button" id="schedule-today">本周</button></div>
+                <div class="schedule-controls"><label>跳转日期<input type="date" id="schedule-week-date" min="1900-01-01" max="9998-12-31"></label><label>查看谁的安排<select id="schedule-filter"><option value="all">我们俩</option><option value="yyf">YYF</option><option value="zxr">ZXR</option><option value="both">共同安排</option></select></label><button type="button" id="schedule-sync">同步</button></div>
+            </div>
+            <div class="schedule-legend"><span class="owner-yyf">● YYF</span><span class="owner-zxr">● ZXR</span><span class="owner-both">● 共同</span><span>↻ 每周固定</span><span>◆ DDL</span><span class="schedule-zone">新加坡时间 UTC+8</span></div>
+            <details class="schedule-series"><summary>管理固定安排</summary><div id="schedule-series-list"></div></details>
+            <div class="schedule-layout"><div><p id="schedule-summary" class="schedule-summary" aria-live="polite"></p><div id="schedule-calendar-scroll" class="schedule-calendar-scroll"><div id="schedule-week" class="schedule-week" aria-label="一周日程"></div></div></div>
+                <aside class="schedule-deadlines" aria-label="近期截止日期"><h2>别忘了这些 DDL</h2><p class="schedule-subtitle">全部未完成 · 按截止时间排列</p><div id="schedule-deadlines"></div></aside>
+            </div>
+        </section>
+        <dialog id="schedule-editor" class="schedule-dialog" aria-labelledby="schedule-editor-title">
+            <form id="schedule-form">
+                <div class="schedule-dialog-heading"><h2 id="schedule-editor-title">添加安排</h2><button type="button" class="schedule-close" id="schedule-editor-close" aria-label="关闭编辑">×</button></div>
+                <p id="schedule-edit-hint" class="schedule-subtitle"></p>
+                <label>安排名称<input id="schedule-title" maxlength="80" required placeholder="课程、开会，或一个小约定"></label>
+                <div class="schedule-form-row"><label>归属<select id="schedule-owner"><option value="yyf">YYF</option><option value="zxr">ZXR</option><option value="both">我们一起</option></select></label><label>类型<select id="schedule-kind"><option value="busy">单次安排</option><option value="weekly">每周固定</option><option value="ddl">DDL 截止日期</option><option value="exception" hidden>仅调整这一次</option></select></label></div>
+                <label><span id="schedule-date-label">日期</span><input type="date" id="schedule-date" min="1900-01-01" max="9998-12-31" required></label>
+                <div class="schedule-form-row"><label><span id="schedule-start-label">开始时间</span><input type="time" id="schedule-start" required></label><label id="schedule-end-field">结束时间<input type="time" id="schedule-end" required></label></div>
+                <fieldset id="schedule-repeat-fields" hidden><legend>每周的哪几天？</legend><div id="schedule-weekdays" class="schedule-weekdays"><label><input type="checkbox" value="1">一</label><label><input type="checkbox" value="2">二</label><label><input type="checkbox" value="3">三</label><label><input type="checkbox" value="4">四</label><label><input type="checkbox" value="5">五</label><label><input type="checkbox" value="6">六</label><label><input type="checkbox" value="0">日</label></div><label>重复至（可选，包含当天）<input type="date" id="schedule-until" min="1900-01-01" max="9998-12-31"></label></fieldset>
+                <label>备注（可选）<textarea id="schedule-note" maxlength="500" rows="3" placeholder="地点、准备事项……"></textarea></label>
+                <p id="schedule-form-error" role="alert"></p><p class="schedule-subtitle">时间按 UTC+8 保存。跨午夜的安排请分成两条。</p>
+                <div class="schedule-dialog-actions"><button type="button" id="schedule-editor-delete" class="schedule-danger" hidden>删除整个固定安排</button><button type="button" id="schedule-cancel">取消</button><button type="submit" id="schedule-save" class="schedule-primary">保存安排</button></div>
+            </form>
+        </dialog>
+        <dialog id="schedule-detail" class="schedule-dialog" aria-labelledby="schedule-detail-title"><div class="schedule-dialog-heading"><h2 id="schedule-detail-title"></h2><button type="button" id="schedule-detail-close" class="schedule-close" aria-label="关闭详情">×</button></div><p id="schedule-detail-meta"></p><p id="schedule-detail-note"></p><div class="schedule-detail-actions"><button type="button" id="schedule-edit">编辑安排</button><button type="button" id="schedule-edit-once">仅修改这一次</button><button type="button" id="schedule-edit-series">编辑整个固定安排</button><button type="button" id="schedule-complete">标记完成</button><button type="button" id="schedule-cancel-once">仅取消这一次</button><button type="button" id="schedule-delete" class="schedule-danger">删除安排</button></div></dialog>
+    </main></div>
+    <script src="js/config.js"></script><script src="js/constants.js"></script><script src="js/store.js"></script><script src="shared/schedule.js"></script><script src="shared/records.js"></script><script src="js/merge.js"></script><script src="js/ui/auth.js"></script><script src="js/ui/nav-read-state.js"></script><script src="js/ui/sync-bar.js"></script><script src="js/ui/side-menu.js"></script><script src="js/ui/topbar-actions.js"></script><script src="js/api.js"></script><script src="js/pages/schedule.js"></script><script src="js/ui/footer-quote.js"></script>
+</body>
+</html>

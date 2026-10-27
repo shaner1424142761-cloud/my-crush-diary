@@ -8,6 +8,7 @@
         if (file === 'wishes.html') return 'wishes';
         if (file === 'anniversaries.html') return 'anniversaries';
         if (file === 'messages.html') return 'messages';
+        if (file === 'schedule.html') return 'schedule';
         return 'index';
     }
 
@@ -18,7 +19,8 @@
         { href: 'blog.html', label: '恋爱 Blog', id: 'blog' },
         { href: 'messages.html', label: '悄悄话', id: 'messages' },
         { href: 'wishes.html', label: '愿望清单', id: 'wishes' },
-        { href: 'anniversaries.html', label: '纪念日', id: 'anniversaries' }
+        { href: 'anniversaries.html', label: '纪念日', id: 'anniversaries' },
+        { href: 'schedule.html', label: '两人日程', id: 'schedule' }
     ];
 
     var toggle = document.createElement('button');

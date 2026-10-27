@@ -9,9 +9,9 @@
     };
 
     CD.deleteRecord = function (section, id) {
-        if (section !== 'wishes' && section !== 'anniversaries') return;
+        if (section !== 'wishes' && section !== 'anniversaries' && section !== 'schedules') return;
         var data = CD.store.cloudData;
-        var key = section === 'wishes' ? CD.keys.wish : CD.keys.anniversary;
+        var key = section === 'schedules' ? function (item) { return item.id; } : section === 'wishes' ? CD.keys.wish : CD.keys.anniversary;
         var item = (data[section] || []).filter(function (entry) { return key(entry) === id; })[0];
         if (!item) return;
         var deleted = CD.mergeRecords(data, {}).deletedItems;
